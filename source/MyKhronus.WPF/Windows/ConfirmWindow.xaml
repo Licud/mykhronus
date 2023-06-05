@@ -1,0 +1,29 @@
+﻿<Window x:Class="MyKhronus.WPF.Windows.ConfirmWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyKhronus.WPF.Windows"
+        mc:Ignorable="d"
+        Title="Please confirm" Height="175" Width="375" WindowStartupLocation="CenterScreen" Topmost="True"
+        ResizeMode="NoResize">
+    <Grid Background="#121212" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Foreground="#d8d8d8" Name="ConfirmMessage" Margin="15" 
+                   FontWeight="DemiBold" TextWrapping="Wrap" />
+
+        <StackPanel Grid.Row="1" Margin="10" 
+                    Orientation="Horizontal" HorizontalAlignment="Right">
+
+            <Button Name="OK" Background="#bb85fc" Margin="5 0" Width="75" Content="Yes" Click="OK_Click"/>
+
+            <Button x:Name="Cancel" Background="#bb85fc" Margin="5 0" Width="75" Content="No" Click="Cancel_Click"/>
+            
+        </StackPanel>
+        
+    </Grid>
+</Window>
