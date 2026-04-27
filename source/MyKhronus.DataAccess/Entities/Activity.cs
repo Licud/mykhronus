@@ -8,4 +8,6 @@ internal class Activity
 
     [Required]
     public string Name { get; set; }
+
+    public virtual ICollection<ActivityRecord> Records { get; set; } = new List<ActivityRecord>();
 }

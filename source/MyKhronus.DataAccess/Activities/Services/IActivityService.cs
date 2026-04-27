@@ -1,4 +1,4 @@
-﻿namespace MyKhronus.DataAccess.Activities;
+﻿namespace MyKhronus.DataAccess.Activities.Services;
 
 using MyKhronus.DataAccess.Activities.Models;
 

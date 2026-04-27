@@ -51,7 +51,7 @@ public partial class App : Application
 
         var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation};Integrated Security=True";
 
-        services.AddDbContextFactory<MyKhronusContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContextFactory<MyKhronusContext_old>(options => options.UseSqlServer(connectionString));
 
         services.AddScoped<IActivityRecordTimerService, ActivityRecordTimerService>();
         services.AddScoped<IActivityService, ActivityServices>();

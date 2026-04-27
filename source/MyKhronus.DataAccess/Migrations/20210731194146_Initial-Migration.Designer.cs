@@ -9,7 +9,7 @@ using MyKhronus.DataAccess.Context;
 
 namespace MyKhronus.DataAccess.Migrations
 {
-    [DbContext(typeof(MyKhronusContext))]
+    [DbContext(typeof(MyKhronusContext_old))]
     [Migration("20210731194146_Initial-Migration")]
     partial class InitialMigration
     {

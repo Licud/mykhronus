@@ -8,7 +8,7 @@ using MyKhronus.DataAccess.Context;
 
 namespace MyKhronus.DataAccess.Migrations
 {
-    [DbContext(typeof(MyKhronusContext))]
+    [DbContext(typeof(MyKhronusContext_old))]
     partial class MyKhronusContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
