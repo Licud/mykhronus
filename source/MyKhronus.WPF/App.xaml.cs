@@ -1,7 +1,6 @@
 ﻿namespace MyKhronus.WPF;
 
 using System.IO;
-using System.Reflection;
 using System.Windows;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using MyKhronus.DataAccess.Context;
+using MyKhronus.DataAccess.DependencyInjection;
 using MyKhronus.DataAccess.Services;
 using MyKhronus.WPF.Services;
 using MyKhronus.WPF.UserControls.ViewModels;
@@ -51,7 +51,12 @@ public partial class App : Application
 
         var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation};Integrated Security=True";
 
-        services.AddDbContextFactory<MyKhronusContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContextFactory<MyKhronusContext_old>(options => options.UseSqlServer(connectionString));
+
+        services.UsingMyKhronusDataAccess(configure =>
+        {
+            configure.ConnectionString = connectionString;
+        });
 
         services.AddScoped<IActivityRecordTimerService, ActivityRecordTimerService>();
         services.AddScoped<IActivityService, ActivityServices>();

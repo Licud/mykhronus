@@ -3,11 +3,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-public sealed class MyKhronusDesignTimeContextFactory : IDesignTimeDbContextFactory<MyKhronusContext>
+public sealed class MyKhronusDesignTimeContextFactory : IDesignTimeDbContextFactory<MyKhronusContext_old>
 {
-    public MyKhronusContext CreateDbContext(string[] args)
+    public MyKhronusContext_old CreateDbContext(string[] args)
     {
-        var builder = new DbContextOptionsBuilder<MyKhronusContext>();
+        var builder = new DbContextOptionsBuilder<MyKhronusContext_old>();
 
         var databaseName = "MyKhronus";
 
@@ -15,6 +15,6 @@ public sealed class MyKhronusDesignTimeContextFactory : IDesignTimeDbContextFact
 
         builder.UseSqlServer(connectionString);
 
-        return new MyKhronusContext(builder.Options);
+        return new MyKhronusContext_old(builder.Options);
     }
 }

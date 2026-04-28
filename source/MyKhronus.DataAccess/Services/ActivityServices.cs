@@ -8,9 +8,9 @@ using MyKhronus.Models;
 
 public class ActivityServices : NotifyPropertyChanged, IActivityService
 {
-    private readonly IDbContextFactory<MyKhronusContext> contextFactory;
+    private readonly IDbContextFactory<MyKhronusContext_old> contextFactory;
 
-    public ActivityServices(IDbContextFactory<MyKhronusContext> contextFactory)
+    public ActivityServices(IDbContextFactory<MyKhronusContext_old> contextFactory)
     {
         this.contextFactory = contextFactory;
     }

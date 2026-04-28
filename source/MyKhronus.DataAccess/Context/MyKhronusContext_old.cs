@@ -1,13 +1,14 @@
 ﻿namespace MyKhronus.DataAccess.Context;
 
 using Microsoft.EntityFrameworkCore;
-using MyKhronus.DataAccess.Entities;
-using MyKhronus.DataAccess.Extensions;
 
-internal class MyKhronusContext : DbContext
+using MyKhronus.DataAccess.Extensions;
+using MyKhronus.Models;
+
+public class MyKhronusContext_old : DbContext
 {
-    public MyKhronusContext(DbContextOptions<MyKhronusContext> options)
-    : base(options)
+    public MyKhronusContext_old(DbContextOptions<MyKhronusContext_old> options)
+        : base(options)
     {
     }
 
