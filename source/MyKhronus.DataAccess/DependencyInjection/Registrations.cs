@@ -7,6 +7,7 @@ using MyKhronus.DataAccess.ActivityRecords.Repositories;
 using MyKhronus.DataAccess.ActivityRecords.Services;
 using MyKhronus.DataAccess.Context;
 using MyKhronus.DataAccess.DataUtility;
+using MyKhronus.DataAccess.WorkItems.Services;
 
 public static class Registrations
 {
@@ -21,6 +22,7 @@ public static class Registrations
 
         serviceCollection.AddTransient<IActivityRecordService, ActivityRecordService>();
         serviceCollection.AddTransient<IActivityRecordRepository, ActivityRecordRepository>();
+        serviceCollection.AddTransient<IWorkItemService, WorkItemService>();
 
         serviceCollection.AddTransient<IUnitOfWork, MyKhronusContextUnitOfWork>();
 
