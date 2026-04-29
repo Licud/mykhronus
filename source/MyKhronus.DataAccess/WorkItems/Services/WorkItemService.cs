@@ -1,0 +1,38 @@
+namespace MyKhronus.DataAccess.WorkItems.Services;
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using MyKhronus.DataAccess.DataUtility;
+using MyKhronus.DataAccess.WorkItems.Models;
+
+internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
+{
+    public async Task<WorkItem> Add(NewWorkItem workItem)
+    {
+        var repository = unitOfWork.GetWorkItemRepository();
+
+        var added = await repository.Add(workItem);
+
+        await unitOfWork.Commit();
+
+        return added;
+    }
+
+    public async Task Delete(Guid workItemId)
+    {
+        var repository = unitOfWork.GetWorkItemRepository();
+
+        await repository.Delete(workItemId);
+
+        await unitOfWork.Commit();
+    }
+
+    public async Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter)
+    {
+        var repository = unitOfWork.GetWorkItemRepository();
+
+        return await repository.Get(filter);
+    }
+}

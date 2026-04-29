@@ -2,12 +2,15 @@
 
 using MyKhronus.DataAccess.Activities.Repositories;
 using MyKhronus.DataAccess.ActivityRecords.Repositories;
+using MyKhronus.DataAccess.WorkItems.Repositories;
 
 internal interface IUnitOfWork : IDisposable
 {
     IActivityRepository GetActivityRepository();
 
     IActivityRecordRepository GetActivityRecordRepository();
+
+    IWorkItemRepository GetWorkItemRepository();
 
     Task Commit();
 }
