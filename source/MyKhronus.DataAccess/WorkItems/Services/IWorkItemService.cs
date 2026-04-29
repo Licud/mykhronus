@@ -27,4 +27,12 @@ public interface IWorkItemService
     /// </summary>
     /// <param name="workItemId">The ID of the work item to delete.</param>
     Task Delete(Guid workItemId);
+
+    /// <summary>
+    /// Link a work item to a project.
+    /// </summary>
+    /// <param name="workItemId">The ID of the work item to link.</param>
+    /// <param name="projectId">The ID of the project to link the work item to.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task LinkWorkItemToProject(Guid workItemId, int projectId);
 }

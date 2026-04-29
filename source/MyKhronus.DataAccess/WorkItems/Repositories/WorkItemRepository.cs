@@ -68,4 +68,17 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
 
         return models;
     }
+
+    public async Task LinkWorkItemToProject(Guid workItemId, int projectId)
+    {
+        logger.LogTrace("Linking work item with ID: {WorkItemId} to project with ID: {ProjectId}", workItemId, projectId);
+
+        var item = await context.WorkItems.FindAsync(workItemId);
+
+        item.ProjectId = projectId;
+
+        context.Update(item);
+
+        logger.LogInformation("Work item with ID: {WorkItemId} linked to project with ID: {ProjectId}", workItemId, projectId);
+    }
 }
