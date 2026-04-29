@@ -13,4 +13,6 @@ internal interface IWorkItemRepository
     Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter);
 
     Task Delete(Guid workItemId);
+
+    Task LinkWorkItemToProject(Guid workItemId, int projectId);
 }

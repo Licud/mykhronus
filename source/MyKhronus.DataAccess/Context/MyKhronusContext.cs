@@ -18,6 +18,8 @@ internal class MyKhronusContext : DbContext
 
     public DbSet<WorkItem> WorkItems { get; set; }
 
+    public DbSet<Project> Projects { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.RemovePluralizingNameConventions();
