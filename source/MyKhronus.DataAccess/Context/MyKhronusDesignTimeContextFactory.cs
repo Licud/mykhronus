@@ -3,18 +3,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-public sealed class MyKhronusDesignTimeContextFactory : IDesignTimeDbContextFactory<MyKhronusContext_old>
+internal sealed class MyKhronusDesignTimeContextFactory : IDesignTimeDbContextFactory<MyKhronusContext>
 {
-    public MyKhronusContext_old CreateDbContext(string[] args)
+    public MyKhronusContext CreateDbContext(string[] args)
     {
-        var builder = new DbContextOptionsBuilder<MyKhronusContext_old>();
+        var builder = new DbContextOptionsBuilder<MyKhronusContext>();
 
-        var databaseName = "MyKhronus";
+        var filePath = @"C:\Dev\mykhronus\source\MyKhronus.DataAccess\MyKhronusData2.mdf";
+        var initialCatalog = "MyKhronusData2";
 
-        var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Dev\\MyKhronus\\Source\\MyKhronus\\MyKhronus.DataAccess\\MyKhronusData.mdf;Integrated Security=True";
+        var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={filePath};Initial Catalog={initialCatalog};Integrated Security=True";
 
         builder.UseSqlServer(connectionString);
 
-        return new MyKhronusContext_old(builder.Options);
+        return new MyKhronusContext(builder.Options);
     }
 }
