@@ -20,6 +20,7 @@ internal class MyKhronusContext(DbContextOptions<MyKhronusContext> options) : Db
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.RemovePluralizingNameConventions();
+        modelBuilder.HasDefaultSchema("mk");
 
         modelBuilder.Entity<DayEntry>()
             .HasKey(de => new { de.EntryDate, de.WorkItemId });
