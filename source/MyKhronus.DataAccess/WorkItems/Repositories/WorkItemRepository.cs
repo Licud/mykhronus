@@ -55,9 +55,9 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             query = query.Where(w => w.Id == filter.WorkItemId.Value);
         }
 
-        if (!string.IsNullOrEmpty(filter.Name))
+        if (!string.IsNullOrEmpty(filter.Description))
         {
-            query = query.Where(w => w.Description == filter.Name);
+            query = query.Where(w => w.Description == filter.Description);
         }
 
         var models = await query

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyKhronus.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using MyKhronus.DataAccess.Context;
 namespace MyKhronus.DataAccess.Migrations.MyKhronus
 {
     [DbContext(typeof(MyKhronusContext))]
-    partial class MyKhronusContextModelSnapshot : ModelSnapshot
+    [Migration("20260506192750_v_0.1.1")]
+    partial class v_011
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

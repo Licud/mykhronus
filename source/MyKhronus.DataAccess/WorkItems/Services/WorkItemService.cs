@@ -13,6 +13,18 @@ internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
     {
         var repository = unitOfWork.GetWorkItemRepository();
 
+        var filter = new WorkItemGetFilter
+        {
+            Description = workItem.Description,
+        };
+
+        var existing = await repository.Get(filter);
+
+        if (existing.Any())
+        {
+            return existing.FirstOrDefault();
+        }
+
         var added = await repository.Add(workItem);
 
         await unitOfWork.Commit();

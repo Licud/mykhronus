@@ -10,12 +10,15 @@ public class MainWindowViewModel : NotifyPropertyChanged
 {
     private readonly ActivityUserControlViewModel activityViewModel;
     private readonly ReportsUserControlViewModel reportsViewModel;
+    private readonly DayUserControlViewModel dayViewModel;
 
     public MainWindowViewModel(ActivityUserControlViewModel activityViewModel,
-        ReportsUserControlViewModel reportsViewModel)
+        ReportsUserControlViewModel reportsViewModel,
+        DayUserControlViewModel dayViewModel)
     {
         this.activityViewModel = activityViewModel;
         this.reportsViewModel = reportsViewModel;
+        this.dayViewModel = dayViewModel;
 
         SelectedViewModel = this.activityViewModel;
     }
@@ -37,5 +40,8 @@ public class MainWindowViewModel : NotifyPropertyChanged
 
     public ICommand ShowReportsView
         => new RelayCommand(() => SelectedViewModel = reportsViewModel);
+
+    public ICommand ShowDayView
+        => new RelayCommand(() => SelectedViewModel = dayViewModel);
 
 }

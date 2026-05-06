@@ -1,0 +1,111 @@
+<UserControl x:Class="MyKhronus.WPF.UserControls.Views.DayUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1200"
+             DataContext="{Binding Source={StaticResource locator}, Path=DayUserControlViewModel}">
+    <Grid Margin="15 10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.ColumnSpan="2" Background="#251f2d" BorderBrush="#9c78bf" BorderThickness="1"
+                MinHeight="50" Margin="5" CornerRadius="5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Style="{StaticResource Header}" Margin="10 2 10 0"
+                       VerticalAlignment="Center" HorizontalAlignment="Left"
+                       Content="Filter" />
+
+                <TextBox Grid.Column="1"
+                         BorderThickness="0 0 0 1" BorderBrush="#9c78bf"
+                         Style="{StaticResource NormalTextBox}"
+                         Margin="0 2 10 0" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Style="{StaticResource Header}" Content="My Day" />
+
+            <ScrollViewer Grid.Row="1" Margin="0 0 20 0" VerticalScrollBarVisibility="Auto">
+                <ItemsControl />
+            </ScrollViewer>
+
+            <Label Grid.Row="2" Style="{StaticResource Header}" Content="Controls" />
+
+            <Border Grid.Row="3" Background="#121212"
+                    MinHeight="50" Margin="5" CornerRadius="5" />
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="1" Margin="0 0 0 5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Style="{StaticResource Header}" Content="Work Items" />
+
+            <Border Grid.Row="1" Margin="0 0 0 15"
+                    Background="#121212" CornerRadius="5" />
+
+            <Label Grid.Row="2"
+                   Style="{StaticResource Header}"
+                   Content="New Entry" />
+
+            <Border Grid.Row="3"
+                    Background="#121212" CornerRadius="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Label Style="{StaticResource Header}" Margin="0 5 0 0" Content="Name" />
+
+                    <TextBox Grid.Row="1" Margin="5 0" Style="{StaticResource NormalTextBox}"
+                             Text="{Binding Path=NewEntryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding Path=AddNewEntry}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+
+                    <StackPanel Grid.Row="2"
+                                Margin="0 10" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Background="#bb85fc"
+                                Margin="5 0" Width="100"
+                                Content="Add"
+                                Command="{Binding Path=AddNewEntry}" />
+
+                        <Button Background="#bb85fc"
+                                Margin="5 0" Width="100"
+                                Content="Add and Start"
+                                Command="{Binding Path=AddAndStartNewEntry}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+    </Grid>
+</UserControl>

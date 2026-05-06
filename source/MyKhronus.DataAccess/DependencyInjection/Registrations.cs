@@ -21,8 +21,6 @@ public static class Registrations
 
         serviceCollection.AddDbContextFactory<MyKhronusContext>(options => options.UseSqlServer(builder.ConnectionString));
 
-        serviceCollection.AddTransient<IActivityRecordService, ActivityRecordService>();
-        serviceCollection.AddTransient<IActivityRecordRepository, ActivityRecordRepository>();
         serviceCollection.AddTransient<IWorkItemService, WorkItemService>();
         serviceCollection.AddTransient<IProjectService, ProjectService>();
 

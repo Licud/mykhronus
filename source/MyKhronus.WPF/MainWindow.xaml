@@ -22,6 +22,10 @@
         <DataTemplate DataType="{x:Type viewModels:ReportsUserControlViewModel}">
             <views:ReportsUserControl />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewModels:DayUserControlViewModel}">
+            <views:DayUserControl />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="#212121">
@@ -82,7 +86,11 @@
                         Content="Activities"
                         Command="{Binding Path=ShowActivityView}" />
 
-            <Button Background="#bb85fc" 
+            <Button Background="#bb85fc"
+                        Content="Day"
+                        Command="{Binding Path=ShowDayView}" />
+
+            <Button Background="#bb85fc"
                         Content="Reports"
                         Command="{Binding Path=ShowReportsView}" />
 
