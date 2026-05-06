@@ -9,6 +9,4 @@ internal class DayEntry
     public Guid WorkItemId { get; init; }
 
     public TimeSpan Duration { get; set; }
-
-    public virtual ICollection<WorkItem> WorkItem { get; set; }
 }

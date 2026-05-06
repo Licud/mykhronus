@@ -14,4 +14,7 @@ public class ViewModelLocator
 
     public ReportsUserControlViewModel ReportsUserControlViewModel
         => App.ServiceProvider.GetRequiredService<ReportsUserControlViewModel>();
+
+    public DayUserControlViewModel DayUserControlViewModel
+        => App.ServiceProvider.GetRequiredService<DayUserControlViewModel>();
 }

@@ -32,6 +32,7 @@ public partial class App : Application
         Configuration = builder.Build();
 
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
         ConfigureServices(serviceCollection);
 
         ServiceProvider = serviceCollection.BuildServiceProvider();
@@ -51,11 +52,15 @@ public partial class App : Application
 
         var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation};Integrated Security=True";
 
+        var databaseLocation2 = Path.Combine(Environment.CurrentDirectory, "Data", "MyKhronusData2.mdf");
+
+        var connectionString2 = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation2};Initial Catalog=MyKhronusData2;Integrated Security=True";
+
         services.AddDbContextFactory<MyKhronusContext_old>(options => options.UseSqlServer(connectionString));
 
         services.UsingMyKhronusDataAccess(configure =>
         {
-            configure.ConnectionString = connectionString;
+            configure.ConnectionString = connectionString2;
         });
 
         services.AddScoped<IActivityRecordTimerService, ActivityRecordTimerService>();
@@ -66,6 +71,7 @@ public partial class App : Application
 
         services.AddScoped<ActivityUserControlViewModel>();
         services.AddScoped<ReportsUserControlViewModel>();
+        services.AddScoped<DayUserControlViewModel>();
         services.AddTransient<MainWindowViewModel>();
 
         services.AddTransient(typeof(MainWindow));
