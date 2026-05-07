@@ -13,6 +13,8 @@ public class RecentWorkItemViewModel(WorkItem workItem, IWorkItemService workIte
     public event EventHandler AddedToMyDay;
     public event EventHandler StartedAndAddedToMyDay;
 
+    public WorkItem WorkItem => workItem;
+
     public Guid WorkItemId => workItem.Id;
 
     public string Name => workItem.Description;

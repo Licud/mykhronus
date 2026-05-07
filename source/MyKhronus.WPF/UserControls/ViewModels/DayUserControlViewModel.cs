@@ -27,44 +27,12 @@ public class DayUserControlViewModel : MainViewModelControls
         RecentWorkItems.Filter = new Predicate<object>(WorkItemNameContains);
 
         MyDay = CollectionViewSource.GetDefaultView(myDayEntries);
+        MyDay.Filter = new Predicate<object>(DayEntryNameContains);
 
         selectedDate = DateTime.Today;
 
         ReloadCollections();
     }
-
-    // Commands
-
-    public ICommand AddNewEntry => new RelayCommand(async () =>
-    {
-        try
-        {
-            await AddWorkItem();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.ToString(), "Error");
-        }
-    });
-
-    public ICommand AddAndStartNewEntry => new RelayCommand(async () =>
-    {
-        try
-        {
-            var entry = await AddWorkItem();
-
-            // TODO: start timer for entry
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.ToString(), "Error");
-        }
-    });
-
-    public ICommand PreviousDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-1));
-
-    public ICommand NextDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(1),
-        () => SelectedDate.Date != DateTime.Today.Date);
 
     // Properties
 
@@ -83,6 +51,7 @@ public class DayUserControlViewModel : MainViewModelControls
         {
             workItemFilter = value;
             RecentWorkItems.Refresh();
+            MyDay.Refresh();
             OnPropertyChanged();
         }
     }
@@ -129,6 +98,37 @@ public class DayUserControlViewModel : MainViewModelControls
 
     public string TotalDurationDisplay => TotalDuration.ToString();
 
+    public ICommand AddNewEntry => new RelayCommand(async () =>
+    {
+        try
+        {
+            await AddWorkItem();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error");
+        }
+    });
+
+    public ICommand AddAndStartNewEntry => new RelayCommand(async () =>
+    {
+        try
+        {
+            var entry = await AddWorkItem();
+
+            await AddWorkItemToMyDay(entry);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error");
+        }
+    });
+
+    public ICommand PreviousDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-1));
+
+    public ICommand NextDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(1),
+        () => SelectedDate.Date != DateTime.Today.Date);
+
     // Recent Work Item Methods
 
     private async Task<WorkItem> AddWorkItem()
@@ -141,8 +141,6 @@ public class DayUserControlViewModel : MainViewModelControls
         {
             AddRecentWorkItem(new RecentWorkItemViewModel(addedWorkItem, workItemService));
         }
-
-        await AddWorkItemToMyDay(addedWorkItem.Id, addedWorkItem.Description);
 
         NewEntryName = string.Empty;
 
@@ -174,18 +172,28 @@ public class DayUserControlViewModel : MainViewModelControls
         return recentWorkItemViewModel?.Name.Contains(WorkItemFilter, StringComparison.InvariantCultureIgnoreCase) == true;
     }
 
+    private bool DayEntryNameContains(object viewModel)
+    {
+        var dayEntryViewModel = viewModel as DayEntryViewModel;
+
+        return dayEntryViewModel?.Name.Contains(WorkItemFilter, StringComparison.InvariantCultureIgnoreCase) == true;
+    }
+
     // Day Entry Methods
 
-    private async Task AddWorkItemToMyDay(Guid workItemId, string workItemName, bool startTimer = false)
+    private async Task AddWorkItemToMyDay(WorkItem workItem, bool startTimer = false)
     {
-        if (myDayEntries.Any(e => e.WorkItemId == workItemId))
+        if (myDayEntries.Any(e => e.WorkItemId == workItem.Id))
+        {
             return;
+        }
 
-        var dayEntry = await dailyEntryService.Add(selectedDate, workItemId);
+        var dayEntry = await dailyEntryService.Add(selectedDate, workItem.Id);
 
-        var viewModel = new DayEntryViewModel(dayEntry, workItemName, dailyEntryService);
+        var viewModel = new DayEntryViewModel(dayEntry, workItem, dailyEntryService);
 
         AddDayEntry(viewModel);
+        RemoveRecentWorkItem(recentWorkItems.FirstOrDefault(r => r.WorkItemId == workItem.Id));
 
         if (startTimer)
         {
@@ -237,37 +245,35 @@ public class DayUserControlViewModel : MainViewModelControls
             AddRecentWorkItem(new RecentWorkItemViewModel(item, workItemService));
         }
 
-        var workItemNames = workItems.ToDictionary(w => w.Id, w => w.Description);
+        var loadedWorkItems = workItems.ToDictionary(w => w.Id, w => w);
 
         foreach (var dayEntry in dayEntries)
         {
-            var name = "Unknown Work Item";
+            var workItem = Task.Run(() => ResolveWorkItem(loadedWorkItems, dayEntry.WorkItemId))
+                .GetAwaiter()
+                .GetResult();
 
-            if (workItemNames.ContainsKey(dayEntry.WorkItemId))
-            {
-                name = workItemNames[dayEntry.WorkItemId];
-            }
-            else
-            {
-                var task = Task.Run(() =>
-                {
-                    var filter = new WorkItemGetFilter()
-                    {
-                        WorkItemId = dayEntry.WorkItemId
-                    };
-
-                    var workItem = workItemService.Get(filter);
-
-                    return workItem;
-                });
-
-                name = task.GetAwaiter().GetResult().Single().Description;
-            }
-
-            var viewModel = new DayEntryViewModel(dayEntry, name, dailyEntryService);
+            var viewModel = new DayEntryViewModel(dayEntry, workItem, dailyEntryService);
 
             AddDayEntry(viewModel);
         }
+    }
+
+    private async Task<WorkItem> ResolveWorkItem(IDictionary<Guid, WorkItem> workItems, Guid workItemId)
+    {
+        if (workItems.ContainsKey(workItemId))
+        {
+            return workItems[workItemId];
+        }
+
+        var filter = new WorkItemGetFilter()
+        {
+            WorkItemId = workItemId
+        };
+
+        var workItem = await workItemService.Get(filter);
+
+        return workItem.Single();
     }
 
     // Event Handlers
@@ -283,19 +289,21 @@ public class DayUserControlViewModel : MainViewModelControls
     {
         var viewModel = sender as RecentWorkItemViewModel;
 
-        _ = AddWorkItemToMyDay(viewModel.WorkItemId, viewModel.Name);
+        _ = AddWorkItemToMyDay(viewModel.WorkItem);
     }
 
     private void RecentWorkItem_StartedAndAddedToMyDay(object sender, EventArgs e)
     {
         var viewModel = sender as RecentWorkItemViewModel;
 
-        _ = AddWorkItemToMyDay(viewModel.WorkItemId, viewModel.Name, startTimer: true);
+        _ = AddWorkItemToMyDay(viewModel.WorkItem, startTimer: true);
     }
 
     private void DayEntry_Deleted(object sender, EventArgs e)
     {
         var viewModel = sender as DayEntryViewModel;
+
+        AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService));
 
         RemoveDayEntry(viewModel);
     }

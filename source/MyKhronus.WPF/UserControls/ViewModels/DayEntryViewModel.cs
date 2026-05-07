@@ -5,6 +5,7 @@ using System.Windows.Input;
 using MyKhronus.Commons.Utilities;
 using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.DayEntries.Services;
+using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.WPF.Utilities;
 
 public class DayEntryViewModel : NotifyPropertyChanged
@@ -12,19 +13,24 @@ public class DayEntryViewModel : NotifyPropertyChanged
     public event EventHandler Deleted;
 
     private readonly IDailyEntryService dailyEntryService;
-    private DayEntry dayEntry;
 
-    public DayEntryViewModel(DayEntry dayEntry, string name, IDailyEntryService dailyEntryService)
+    private DayEntry dayEntry;
+    private WorkItem workItem;
+
+    public DayEntryViewModel(DayEntry dayEntry, WorkItem workItem, IDailyEntryService dailyEntryService)
     {
         this.dayEntry = dayEntry;
+        this.workItem = workItem;
         this.dailyEntryService = dailyEntryService;
-        Name = name;
+        Name = workItem.Description;
         duration = dayEntry.Duration;
     }
 
     public Guid WorkItemId => dayEntry.WorkItemId;
 
     public DayEntry DayEntry => dayEntry;
+
+    public WorkItem WorkItem => workItem;
 
     public string Name { get; }
 
