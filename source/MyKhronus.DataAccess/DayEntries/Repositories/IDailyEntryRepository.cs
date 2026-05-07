@@ -12,6 +12,8 @@ internal interface IDailyEntryRepository
 
     Task Delete(DateTime entryDate, Guid workItemId);
 
+    Task Delete(Guid workItemId);
+
     Task<DayEntry> Add(DateTime entryDate, Guid workItemId);
 
     Task Update(DayEntry dayEntry);

@@ -9,6 +9,7 @@ using System.Windows.Input;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.DataAccess.WorkItems.Services;
+using MyKhronus.Models.Enums;
 using MyKhronus.WPF.Utilities;
 
 public class DayUserControlViewModel : MainViewModelControls
@@ -204,6 +205,7 @@ public class DayUserControlViewModel : MainViewModelControls
     private void AddDayEntry(DayEntryViewModel viewModel)
     {
         viewModel.Deleted += DayEntry_Deleted;
+        viewModel.DurationChanged += DayEntry_DurationChanged;
 
         myDayEntries.Add(viewModel);
 
@@ -213,6 +215,7 @@ public class DayUserControlViewModel : MainViewModelControls
     private void RemoveDayEntry(DayEntryViewModel viewModel)
     {
         viewModel.Deleted -= DayEntry_Deleted;
+        viewModel.DurationChanged -= DayEntry_DurationChanged;
 
         myDayEntries.Remove(viewModel);
 
@@ -306,5 +309,19 @@ public class DayUserControlViewModel : MainViewModelControls
         AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService));
 
         RemoveDayEntry(viewModel);
+    }
+
+    private void DayEntry_DurationChanged(object sender, DayEntryDurationChangedArgs e)
+    {
+        if (e.DurationChangeReason == DurationChangeReason.Add)
+        {
+            TotalDuration = TotalDuration.Add(e.DurationChange);
+        }
+
+        if (e.DurationChangeReason == DurationChangeReason.Subtract
+            || e.DurationChangeReason == DurationChangeReason.Reset)
+        {
+            TotalDuration = TotalDuration.Subtract(e.DurationChange);
+        }
     }
 }

@@ -6,11 +6,14 @@ using MyKhronus.Commons.Utilities;
 using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
+using MyKhronus.Models.Enums;
 using MyKhronus.WPF.Utilities;
 
 public class DayEntryViewModel : NotifyPropertyChanged
 {
     public event EventHandler Deleted;
+
+    public event EventHandler<DayEntryDurationChangedArgs> DurationChanged;
 
     private readonly IDailyEntryService dailyEntryService;
 
@@ -87,6 +90,12 @@ public class DayEntryViewModel : NotifyPropertyChanged
 
         dayEntry = dayEntry with { Duration = Duration };
 
+        DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
+        {
+            DurationChange = delta,
+            DurationChangeReason = DurationChangeReason.Add
+        });
+
         await dailyEntryService.Update(dayEntry);
     }
 
@@ -103,6 +112,12 @@ public class DayEntryViewModel : NotifyPropertyChanged
 
             dayEntry = dayEntry with { Duration = Duration };
 
+            DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
+            {
+                DurationChange = delta,
+                DurationChangeReason = DurationChangeReason.Subtract
+            });
+
             await dailyEntryService.Update(dayEntry);
         }
     }
@@ -111,9 +126,17 @@ public class DayEntryViewModel : NotifyPropertyChanged
 
     private async Task ExecuteResetAsync()
     {
+        var previous = Duration;
+
         Duration = TimeSpan.Zero;
 
         dayEntry = dayEntry with { Duration = Duration };
+
+        DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
+        {
+            DurationChange = previous,
+            DurationChangeReason = DurationChangeReason.Reset
+        });
 
         await dailyEntryService.Update(dayEntry);
     }
