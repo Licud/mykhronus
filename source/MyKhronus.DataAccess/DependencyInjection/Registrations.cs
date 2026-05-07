@@ -3,10 +3,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using MyKhronus.DataAccess.ActivityRecords.Repositories;
-using MyKhronus.DataAccess.ActivityRecords.Services;
 using MyKhronus.DataAccess.Context;
 using MyKhronus.DataAccess.DataUtility;
+using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.Projects.Services;
 using MyKhronus.DataAccess.WorkItems.Services;
 
@@ -23,6 +22,7 @@ public static class Registrations
 
         serviceCollection.AddTransient<IWorkItemService, WorkItemService>();
         serviceCollection.AddTransient<IProjectService, ProjectService>();
+        serviceCollection.AddTransient<IDailyEntryService, DailyEntryService>();
 
         serviceCollection.AddTransient<IUnitOfWork, MyKhronusContextUnitOfWork>();
 

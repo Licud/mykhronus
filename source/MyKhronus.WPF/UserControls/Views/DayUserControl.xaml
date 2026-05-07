@@ -50,13 +50,64 @@
             <Label Style="{StaticResource Header}" Content="My Day" />
 
             <ScrollViewer Grid.Row="1" Margin="0 0 20 0" VerticalScrollBarVisibility="Auto">
-                <ItemsControl />
+                <ItemsControl ItemsSource="{Binding Path=MyDay, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <views:DayEntryUserControl />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
 
             <Label Grid.Row="2" Style="{StaticResource Header}" Content="Controls" />
 
             <Border Grid.Row="3" Background="#121212"
-                    MinHeight="50" Margin="5" CornerRadius="5" />
+                    MinHeight="50" Margin="5" CornerRadius="5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Margin="10" Orientation="Horizontal">
+
+                        <Label Style="{StaticResource Header}"
+                               Margin="10 0 0 0" Width="50"
+                               HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                               Content="Date" />
+
+                        <DatePicker Style="{DynamicResource CustomDatePicker}" Width="150" Margin="0 0 10 0"
+                                    VerticalContentAlignment="Center"
+                                    SelectedDate="{Binding Path=SelectedDate, Mode=TwoWay}" />
+
+                        <Button Background="#1ddecb"
+                                Style="{StaticResource ActivityControlButton}"
+                                Command="{Binding Path=PreviousDay}">
+                            <Image Source="/images/Left.png" Height="16" />
+                        </Button>
+
+                        <Button Background="#1ddecb"
+                                Style="{StaticResource ActivityControlButton}"
+                                Command="{Binding Path=NextDay}">
+                            <Image Source="/images/Right.png" Height="16" />
+                        </Button>
+
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="10" Orientation="Horizontal">
+
+                        <Label Style="{StaticResource Header}" Margin="5 0 0 0" Width="90"
+                               HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                               Content="Total Time" />
+
+                        <TextBox Style="{StaticResource NormalTextBox}" Width="100"
+                                 HorizontalContentAlignment="Center" IsReadOnly="True"
+                                 Text="{Binding Path=TotalDurationDisplay, Mode=OneWay}" />
+
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
 
         <Grid Grid.Row="1" Grid.Column="1" Margin="0 0 0 5">

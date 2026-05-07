@@ -34,9 +34,13 @@ internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
 
     public async Task Delete(Guid workItemId)
     {
-        var repository = unitOfWork.GetWorkItemRepository();
+        var dailyEntryRepository = unitOfWork.GetDailyEntryRepository();
 
-        await repository.Delete(workItemId);
+        await dailyEntryRepository.Delete(workItemId);
+
+        var workItemRepository = unitOfWork.GetWorkItemRepository();
+
+        await workItemRepository.Delete(workItemId);
 
         await unitOfWork.Commit();
     }

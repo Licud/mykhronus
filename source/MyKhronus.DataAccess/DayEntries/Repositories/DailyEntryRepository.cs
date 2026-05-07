@@ -52,6 +52,22 @@ internal class DailyEntryRepository(
         logger.LogInformation("Deleted entry for date {entryDate} and work item {workItemId}", entryDate, workItemId);
     }
 
+    public async Task Delete(Guid workItemId)
+    {
+        logger.LogTrace("Deleting entries for work item {workItemId}", workItemId);
+
+        var entries = await context.DayEntries
+            .Where(e => e.WorkItemId == workItemId)
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            context.DayEntries.Remove(entry);
+        }
+
+        logger.LogInformation("Deleted entries for work item {workItemId}", workItemId);
+    }
+
     public async Task<IReadOnlyList<DayEntry>> GetEntries(DateTime entryDate)
     {
         logger.LogTrace("Getting entries for date {entryDate}", entryDate);

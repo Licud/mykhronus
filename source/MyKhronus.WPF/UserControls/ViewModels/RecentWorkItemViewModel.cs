@@ -10,24 +10,18 @@ using MyKhronus.WPF.Utilities;
 public class RecentWorkItemViewModel(WorkItem workItem, IWorkItemService workItemService) : NotifyPropertyChanged
 {
     public event EventHandler Deleted;
+    public event EventHandler AddedToMyDay;
+    public event EventHandler StartedAndAddedToMyDay;
+
+    public WorkItem WorkItem => workItem;
 
     public Guid WorkItemId => workItem.Id;
 
     public string Name => workItem.Description;
 
-    public ICommand AddToMyDay => new RelayCommand(ExecuteAddToMyDay);
+    public ICommand AddToMyDay => new RelayCommand(() => AddedToMyDay?.Invoke(this, EventArgs.Empty));
 
-    private void ExecuteAddToMyDay()
-    {
-        // TODO: add work item to day entries
-    }
-
-    public ICommand StartAddToMyDay => new RelayCommand(ExecuteStartAddToMyDay);
-
-    private void ExecuteStartAddToMyDay()
-    {
-        // TODO: add work item to day entries and start timer
-    }
+    public ICommand StartAddToMyDay => new RelayCommand(() => StartedAndAddedToMyDay?.Invoke(this, EventArgs.Empty));
 
     public ICommand Delete => new RelayCommand(async () => 
     {
