@@ -20,7 +20,7 @@ public class MainWindowViewModel : NotifyPropertyChanged
         this.reportsViewModel = reportsViewModel;
         this.dayViewModel = dayViewModel;
 
-        SelectedViewModel = this.activityViewModel;
+        SelectedViewModel = this.dayViewModel;
     }
 
     private MainViewModelControls selectedViewModel;

@@ -82,13 +82,13 @@
                 </Style>
             </StackPanel.Resources>
 
-            <Button Background="#bb85fc" 
-                        Content="Activities"
-                        Command="{Binding Path=ShowActivityView}" />
-
             <Button Background="#bb85fc"
                         Content="Day"
                         Command="{Binding Path=ShowDayView}" />
+
+            <Button Background="#bb85fc" 
+                        Content="Activities"
+                        Command="{Binding Path=ShowActivityView}" />
 
             <Button Background="#bb85fc"
                         Content="Reports"
