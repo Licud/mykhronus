@@ -147,13 +147,17 @@ public class DayEntryViewModel : NotifyPropertyChanged
         await dailyEntryService.Update(dayEntry);
     }
 
-    public ICommand StartTimer => new RelayCommand(() => 
+    public ICommand StartTimer => new RelayCommand(ExecuteStartTimer, CanExecuteStartTimer);
+
+    private void ExecuteStartTimer()
     {
         TimerStateChanged?.Invoke(this, new TimerStateChangedArgs
         {
             TimerStateChange = TimerStateChange.Start
         });
-    });
+    }
+
+    private bool CanExecuteStartTimer() => dayEntry.EntryDate.Date == DateTime.Today;
 
     public ICommand StopTimer => new RelayCommand(() => 
     {

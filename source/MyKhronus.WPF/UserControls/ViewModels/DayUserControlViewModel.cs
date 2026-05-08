@@ -113,7 +113,7 @@ public class DayUserControlViewModel : MainViewModelControls
 
     public ICommand AddNewEntry => new RelayCommand(async () => await ExecuteAddNewEntry(), CanAddNewEntry);
         
-    public ICommand AddAndStartNewEntry => new RelayCommand(async () => await ExecuteAddAndStartNewEntry(), CanAddNewEntry);
+    public ICommand AddAndStartNewEntry => new RelayCommand(async () => await ExecuteAddAndStartNewEntry(), CanAddAndStartNewEntry);
 
     public ICommand PreviousDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-1));
 
@@ -148,10 +148,11 @@ public class DayUserControlViewModel : MainViewModelControls
         }
     }
 
-    private bool CanAddNewEntry()
-    {
-        return !string.IsNullOrWhiteSpace(NewEntryName);
-    }
+    private bool IsToday() => selectedDate.Date == DateTime.Today;
+
+    private bool CanAddNewEntry() => !string.IsNullOrWhiteSpace(NewEntryName);
+
+    private bool CanAddAndStartNewEntry() => CanAddNewEntry() && IsToday();
 
     private async Task<WorkItem> AddWorkItem()
     {
@@ -179,7 +180,7 @@ public class DayUserControlViewModel : MainViewModelControls
 
         if (!inRecentWorkItems && !inMyDayEntries)
         {
-            AddRecentWorkItem(new RecentWorkItemViewModel(savedWorkItem, workItemService));
+            AddRecentWorkItem(new RecentWorkItemViewModel(savedWorkItem, workItemService, IsToday()));
         }
         else
         {
@@ -290,7 +291,7 @@ public class DayUserControlViewModel : MainViewModelControls
 
         foreach (var item in selectableWorkItems)
         {
-            AddRecentWorkItem(new RecentWorkItemViewModel(item, workItemService));
+            AddRecentWorkItem(new RecentWorkItemViewModel(item, workItemService, IsToday()));
         }
 
         var loadedWorkItems = workItems.ToDictionary(w => w.Id, w => w);
@@ -308,7 +309,7 @@ public class DayUserControlViewModel : MainViewModelControls
             AddDayEntry(viewModel);
         }
 
-        var runningEntryExistsInDayEntries = dayEntries.Any(e => e.WorkItemId == currentlyRunningTimerEntry.WorkItemId);
+        var runningEntryExistsInDayEntries = dayEntries.Any(e => e.WorkItemId == currentlyRunningTimerEntry?.WorkItemId);
 
         var runningEntryIsOnThisDate = isToday && currentlyRunningTimerEntry != null && runningEntryExistsInDayEntries;
 
@@ -360,7 +361,7 @@ public class DayUserControlViewModel : MainViewModelControls
     {
         var viewModel = sender as RecentWorkItemViewModel;
 
-        _ = AddWorkItemToMyDay(viewModel.WorkItem, startTimer: true);
+        _ = AddWorkItemToMyDay(viewModel.WorkItem, startTimer: IsToday());
     }
 
     private void DayEntry_Deleted(object sender, EventArgs e)
@@ -373,7 +374,7 @@ public class DayUserControlViewModel : MainViewModelControls
             currentlyRunningTimerEntry = null;
         }
 
-        AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService));
+        AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService, IsToday()));
 
         RemoveDayEntry(viewModel);
     }
