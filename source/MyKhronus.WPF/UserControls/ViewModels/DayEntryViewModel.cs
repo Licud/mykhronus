@@ -7,13 +7,14 @@ using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.Models.Enums;
+using MyKhronus.WPF.UserControls.EventArguments;
 using MyKhronus.WPF.Utilities;
 
 public class DayEntryViewModel : NotifyPropertyChanged
 {
     public event EventHandler Deleted;
-
     public event EventHandler<DayEntryDurationChangedArgs> DurationChanged;
+    public event EventHandler<TimerStateChangedArgs> TimerStateChanged;
 
     private readonly IDailyEntryService dailyEntryService;
 
@@ -80,12 +81,8 @@ public class DayEntryViewModel : NotifyPropertyChanged
         }
     }
 
-    public ICommand Add => new RelayCommand(async () => await ExecuteAdd(), () => addMinutes.HasValue);
-
-    private async Task ExecuteAdd()
+    public void AddDuration(TimeSpan delta)
     {
-        var delta = TimeSpan.FromMinutes(addMinutes!.Value);
-
         Duration = Duration.Add(delta);
 
         dayEntry = dayEntry with { Duration = Duration };
@@ -95,6 +92,15 @@ public class DayEntryViewModel : NotifyPropertyChanged
             DurationChange = delta,
             DurationChangeReason = DurationChangeReason.Add
         });
+    }
+
+    public ICommand Add => new RelayCommand(async () => await ExecuteAdd(), () => addMinutes.HasValue);
+
+    private async Task ExecuteAdd()
+    {
+        var delta = TimeSpan.FromMinutes(addMinutes.Value);
+
+        AddDuration(delta);
 
         await dailyEntryService.Update(dayEntry);
     }
@@ -141,9 +147,21 @@ public class DayEntryViewModel : NotifyPropertyChanged
         await dailyEntryService.Update(dayEntry);
     }
 
-    public ICommand StartTimer => new RelayCommand(() => { });
+    public ICommand StartTimer => new RelayCommand(() => 
+    {
+        TimerStateChanged?.Invoke(this, new TimerStateChangedArgs
+        {
+            TimerStateChange = TimerStateChange.Start
+        });
+    });
 
-    public ICommand PauseTimer => new RelayCommand(() => { });
+    public ICommand StopTimer => new RelayCommand(() => 
+    {
+        TimerStateChanged?.Invoke(this, new TimerStateChangedArgs
+        {
+            TimerStateChange = TimerStateChange.Stop
+        });
+    });
 
     public ICommand Delete => new RelayCommand(async () =>
     {

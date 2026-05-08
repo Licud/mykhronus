@@ -86,7 +86,7 @@
                     <Image Source="/images/Run.png" Height="16" />
                 </Button>
 
-                <Button Background="#1ddecb" Style="{StaticResource ActivityControlButton}" Command="{Binding PauseTimer}"
+                <Button Background="#1ddecb" Style="{StaticResource ActivityControlButton}" Command="{Binding StopTimer}"
                         Visibility="{Binding Path=IsTimerRunning, Converter={StaticResource BoolToVisibility}}">
                     <Image Source="/images/Pause.png" Height="16" />
                 </Button>
