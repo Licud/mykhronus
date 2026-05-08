@@ -35,7 +35,8 @@
                          BorderThickness="0 0 0 1" BorderBrush="#9c78bf"
                          Style="{StaticResource NormalTextBox}"
                          Margin="0 2 10 0"
-                         Text="{Binding Path=WorkItemFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding Path=WorkItemFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         GotFocus="Filter_GotFocus" />
             </Grid>
         </Border>
 

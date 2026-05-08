@@ -8,4 +8,11 @@ public partial class DayUserControl : UserControl
     {
         InitializeComponent();
     }
+
+    private void Filter_GotFocus(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var textBox = (TextBox)e.Source;
+
+        textBox.Text = "";
+    }
 }
