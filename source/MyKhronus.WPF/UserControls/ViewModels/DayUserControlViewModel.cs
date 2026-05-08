@@ -38,6 +38,8 @@ public class DayUserControlViewModel : MainViewModelControls
         MyDay = CollectionViewSource.GetDefaultView(myDayEntries);
         MyDay.Filter = new Predicate<object>(DayEntryNameContains);
 
+        recentWorkItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRecentWorkItems));
+
         selectedDate = DateTime.Today;
 
         ReloadCollections();
