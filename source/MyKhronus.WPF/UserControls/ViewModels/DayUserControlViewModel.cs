@@ -262,11 +262,6 @@ public class DayUserControlViewModel : MainViewModelControls
         viewModel.DurationChanged -= DayEntry_DurationChanged;
         viewModel.TimerStateChanged -= DayEntry_TimerStateChanged;
 
-        if (currentlyRunningTimerEntry == viewModel)
-        {
-            currentlyRunningTimerEntry = null;
-        }
-
         myDayEntries.Remove(viewModel);
 
         TotalDuration = TotalDuration.Subtract(viewModel.Duration);
@@ -300,15 +295,26 @@ public class DayUserControlViewModel : MainViewModelControls
 
         var loadedWorkItems = workItems.ToDictionary(w => w.Id, w => w);
 
-        foreach (var dayEntry in dayEntries)
-        {
-            var workItem = Task.Run(() => ResolveWorkItem(loadedWorkItems, dayEntry.WorkItemId))
-                .GetAwaiter()
-                .GetResult();
+        var isToday = selectedDate.Date == DateTime.Today;
+        var runningWorkItemId = isToday ? currentlyRunningTimerEntry?.WorkItemId : null;
 
+        var dayEntriesExcludingCurrentlyRunning = dayEntries.Where(e => e.WorkItemId != runningWorkItemId);
+
+        foreach (var dayEntry in dayEntriesExcludingCurrentlyRunning)
+        {
+            var workItem = Task.Run(() => ResolveWorkItem(loadedWorkItems, dayEntry.WorkItemId)).GetAwaiter().GetResult();
             var viewModel = new DayEntryViewModel(dayEntry, workItem, dailyEntryService);
 
             AddDayEntry(viewModel);
+        }
+
+        var runningEntryExistsInDayEntries = dayEntries.Any(e => e.WorkItemId == currentlyRunningTimerEntry.WorkItemId);
+
+        var runningEntryIsOnThisDate = isToday && currentlyRunningTimerEntry != null && runningEntryExistsInDayEntries;
+
+        if (runningEntryIsOnThisDate)
+        {
+            AddDayEntry(currentlyRunningTimerEntry);
         }
     }
 
@@ -360,6 +366,12 @@ public class DayUserControlViewModel : MainViewModelControls
     private void DayEntry_Deleted(object sender, EventArgs e)
     {
         var viewModel = sender as DayEntryViewModel;
+
+        if (currentlyRunningTimerEntry == viewModel)
+        {
+            timer.Stop();
+            currentlyRunningTimerEntry = null;
+        }
 
         AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService));
 
