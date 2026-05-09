@@ -36,6 +36,13 @@ internal class DailyEntryService(IUnitOfWork unitOfWork) : IDailyEntryService
         return await repository.GetEntries(entryDate);
     }
 
+    public async Task<IReadOnlyList<DayEntry>> GetEntriesBetween(DateTime from, DateTime to)
+    {
+        var repository = unitOfWork.GetDailyEntryRepository();
+
+        return await repository.GetEntriesBetween(from, to);
+    }
+
     public async Task Update(DayEntry dayEntry)
     {
         var repository = unitOfWork.GetDailyEntryRepository();

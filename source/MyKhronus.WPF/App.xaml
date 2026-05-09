@@ -12,6 +12,7 @@
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+            <converters:BoolToHiddenVisibilityConverter x:Key="BoolToHiddenVisibility" />
             
             <Style x:Key="BaseStyle" TargetType="{x:Type FrameworkElement}">
                 <Setter Property="Height" Value="25" />
