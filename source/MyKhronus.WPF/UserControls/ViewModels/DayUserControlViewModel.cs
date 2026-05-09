@@ -114,6 +114,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     public ICommand PauseTimer => new RelayCommand(ExecuteGlobalPauseTimer, () => IsTimerRunning);
 
+    public ICommand Save => new RelayCommand(async () => await ExecuteSave());
+
     public ICommand Loaded => new RelayCommand(async () => await ReloadCollections());
 
     public ICommand AddNewEntry => new RelayCommand(async () => await ExecuteAddNewEntry(), CanAddNewEntry);
@@ -140,6 +142,19 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         timer.Stop();
 
         OnPropertyChanged(nameof(IsTimerRunning));
+    }
+
+    private async Task ExecuteSave()
+    {
+        foreach (var entry in myDayEntries.ToList())
+        {
+            await dailyEntryService.Update(entry.DayEntry);
+        }
+
+        if (currentlyRunningTimerEntry != null && !myDayEntries.Contains(currentlyRunningTimerEntry))
+        {
+            await dailyEntryService.Update(currentlyRunningTimerEntry.DayEntry);
+        }
     }
 
     // Recent Work Item Methods

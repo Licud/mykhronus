@@ -125,6 +125,12 @@
                             <Image Source="/images/Pause.png" Height="16" />
                         </Button>
 
+                        <Button Background="#1ddecb"
+                                Style="{StaticResource ActivityControlButton}"
+                                Command="{Binding Save}">
+                            <Image Source="/images/SaveAll.png" Height="16" />
+                        </Button>
+
                     </StackPanel>
                 </Grid>
             </Border>

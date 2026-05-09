@@ -94,43 +94,39 @@ public class DayEntryViewModel : NotifyPropertyChanged
         });
     }
 
-    public ICommand Add => new RelayCommand(async () => await ExecuteAdd(), () => addMinutes.HasValue);
+    public ICommand Add => new RelayCommand(ExecuteAdd, () => addMinutes.HasValue);
 
-    private async Task ExecuteAdd()
+    private void ExecuteAdd()
     {
-        var delta = TimeSpan.FromMinutes(addMinutes.Value);
-
-        AddDuration(delta);
-
-        await dailyEntryService.Update(dayEntry);
+        AddDuration(TimeSpan.FromMinutes(addMinutes.Value));
     }
 
-    public ICommand Subtract => new RelayCommand(async () => await ExecuteSubtract(), () => addMinutes.HasValue);
+    public ICommand Subtract => new RelayCommand(ExecuteSubtract, () => addMinutes.HasValue);
 
-    private async Task ExecuteSubtract()
+    private void ExecuteSubtract()
     {
         var delta = TimeSpan.FromMinutes(addMinutes!.Value);
         var result = dayEntry.Duration.Subtract(delta);
 
-        if (result >= TimeSpan.Zero)
+        if (result < TimeSpan.Zero)
         {
-            Duration = result;
-
-            dayEntry = dayEntry with { Duration = Duration };
-
-            DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
-            {
-                DurationChange = delta,
-                DurationChangeReason = DurationChangeReason.Subtract
-            });
-
-            await dailyEntryService.Update(dayEntry);
+            return;
         }
+
+        Duration = result;
+
+        dayEntry = dayEntry with { Duration = Duration };
+
+        DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
+        {
+            DurationChange = delta,
+            DurationChangeReason = DurationChangeReason.Subtract
+        });
     }
 
-    public ICommand Reset => new RelayCommand(async () => await ExecuteResetAsync());
+    public ICommand Reset => new RelayCommand(ExecuteReset);
 
-    private async Task ExecuteResetAsync()
+    private void ExecuteReset()
     {
         var previous = Duration;
 
@@ -143,8 +139,6 @@ public class DayEntryViewModel : NotifyPropertyChanged
             DurationChange = previous,
             DurationChangeReason = DurationChangeReason.Reset
         });
-
-        await dailyEntryService.Update(dayEntry);
     }
 
     public ICommand StartTimer => new RelayCommand(ExecuteStartTimer, CanExecuteStartTimer);
