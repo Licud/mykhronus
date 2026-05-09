@@ -42,9 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyKhronus.Commons\MyKhronus.Commons.csproj" />
     <ProjectReference Include="..\MyKhronus.DataAccess\MyKhronus.DataAccess.csproj" />
-    <ProjectReference Include="..\MyKhronus.Models\MyKhronus.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

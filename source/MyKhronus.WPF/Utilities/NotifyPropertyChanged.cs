@@ -1,4 +1,4 @@
-﻿namespace MyKhronus.Commons.Utilities;
+﻿namespace MyKhronus.WPF.Utilities;
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;

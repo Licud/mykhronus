@@ -2,11 +2,10 @@ namespace MyKhronus.WPF.UserControls.ViewModels;
 
 using System.Windows.Input;
 
-using MyKhronus.Commons.Utilities;
 using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
-using MyKhronus.Models.Enums;
+using MyKhronus.WPF.Enums;
 using MyKhronus.WPF.UserControls.EventArguments;
 using MyKhronus.WPF.Utilities;
 

@@ -28,4 +28,13 @@ public static class Registrations
 
         return serviceCollection;
     }
+
+    public static void EnsureMyKhronusDatabaseCreated(this IServiceProvider provider)
+    {
+        var factory = provider.GetRequiredService<IDbContextFactory<MyKhronusContext>>();
+
+        using var context = factory.CreateDbContext();
+
+        context.Database.Migrate();
+    }
 }

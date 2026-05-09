@@ -1,4 +1,4 @@
-﻿namespace MyKhronus.Models.Enums;
+﻿namespace MyKhronus.WPF.Enums;
 
 public enum DurationChangeReason
 {
