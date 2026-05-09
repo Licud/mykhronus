@@ -107,6 +107,25 @@
                                  Text="{Binding Path=TotalDurationDisplay, Mode=OneWay}" />
 
                     </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="10" Orientation="Horizontal"
+                                HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                        <Button Background="Green"
+                                Style="{StaticResource ActivityControlButton}"
+                                Visibility="{Binding Path=IsTimerRunning, Converter={StaticResource InverseBoolToVisibility}}"
+                                Command="{Binding StartTimer}">
+                            <Image Source="/images/Run.png" Height="16" />
+                        </Button>
+
+                        <Button Background="#1ddecb"
+                                Style="{StaticResource ActivityControlButton}"
+                                Visibility="{Binding Path=IsTimerRunning, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding PauseTimer}">
+                            <Image Source="/images/Pause.png" Height="16" />
+                        </Button>
+
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>

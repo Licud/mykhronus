@@ -108,6 +108,12 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     public string TotalDurationDisplay => TotalDuration.ToString();
 
+    public bool IsTimerRunning => timer.IsEnabled;
+
+    public ICommand StartTimer => new RelayCommand(ExecuteGlobalStartTimer, CanExecuteGlobalStartTimer);
+
+    public ICommand PauseTimer => new RelayCommand(ExecuteGlobalPauseTimer, () => IsTimerRunning);
+
     public ICommand Loaded => new RelayCommand(async () => await ReloadCollections());
 
     public ICommand AddNewEntry => new RelayCommand(async () => await ExecuteAddNewEntry(), CanAddNewEntry);
@@ -118,6 +124,23 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     public ICommand NextDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(1),
         () => SelectedDate.Date != DateTime.Today.Date);
+
+    private void ExecuteGlobalStartTimer() => StartTimerForEntry(currentlyRunningTimerEntry);
+
+    private bool CanExecuteGlobalStartTimer() => !IsTimerRunning && currentlyRunningTimerEntry != null;
+
+    private void ExecuteGlobalPauseTimer()
+    {
+        if (currentlyRunningTimerEntry == null)
+        {
+            return;
+        }
+
+        currentlyRunningTimerEntry.IsTimerRunning = false;
+        timer.Stop();
+
+        OnPropertyChanged(nameof(IsTimerRunning));
+    }
 
     // Recent Work Item Methods
 
@@ -250,7 +273,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
             if (startTimer)
             {
-                StartTimer(currentDayEntry);
+                StartTimerForEntry(currentDayEntry);
             }
         }
         finally
@@ -259,14 +282,20 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         }
     }
 
-    private void AddDayEntry(DayEntryViewModel viewModel)
+    private void AddDayEntry(DayEntryViewModel viewModel, int? index = null)
     {
         viewModel.Deleted += DayEntry_Deleted;
         viewModel.DurationChanged += DayEntry_DurationChanged;
         viewModel.TimerStateChanged += DayEntry_TimerStateChanged;
 
-        myDayEntries.Add(viewModel);
-
+        if (index.HasValue)
+        {
+            myDayEntries.Insert(index.Value, viewModel);
+        }
+        else
+        {
+            myDayEntries.Add(viewModel);
+        }
         TotalDuration = TotalDuration.Add(viewModel.Duration);
     }
 
@@ -328,7 +357,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         if (runningEntryIsOnThisDate)
         {
-            AddDayEntry(currentlyRunningTimerEntry);
+            AddDayEntry(currentlyRunningTimerEntry, 0);
         }
     }
 
@@ -385,6 +414,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         {
             timer.Stop();
             currentlyRunningTimerEntry = null;
+            OnPropertyChanged(nameof(IsTimerRunning));
         }
 
         AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService, IsToday()));
@@ -406,9 +436,9 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         }
     }
 
-    private void StartTimer(DayEntryViewModel viewModel)
+    private void StartTimerForEntry(DayEntryViewModel viewModel)
     {
-        if (currentlyRunningTimerEntry != null)
+        if (currentlyRunningTimerEntry != null && currentlyRunningTimerEntry != viewModel)
         {
             currentlyRunningTimerEntry.IsTimerRunning = false;
         }
@@ -416,6 +446,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         currentlyRunningTimerEntry = viewModel;
         currentlyRunningTimerEntry.IsTimerRunning = true;
         timer.Start();
+
+        OnPropertyChanged(nameof(IsTimerRunning));
     }
 
     private void DayEntry_TimerStateChanged(object sender, TimerStateChangedArgs e)
@@ -424,7 +456,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         if (e.TimerStateChange == TimerStateChange.Start)
         {
-            StartTimer(viewModel);
+            StartTimerForEntry(viewModel);
         }
         else if (e.TimerStateChange == TimerStateChange.Stop)
         {
@@ -434,6 +466,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             {
                 currentlyRunningTimerEntry = null;
                 timer.Stop();
+
+                OnPropertyChanged(nameof(IsTimerRunning));
             }
         }
     }
