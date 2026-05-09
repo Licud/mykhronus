@@ -1,17 +1,9 @@
-﻿namespace MyKhronus.WPF.UserControls.Views
+namespace MyKhronus.WPF.UserControls.Views
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using System.Windows;
     using System.Windows.Controls;
-    using System.Windows.Data;
-    using System.Windows.Documents;
     using System.Windows.Input;
     using System.Windows.Media;
-    using System.Windows.Media.Imaging;
-    using System.Windows.Navigation;
-    using System.Windows.Shapes;
 
     /// <summary>
     /// Interaction logic for ReportsUserControl.xaml
@@ -21,6 +13,26 @@
         public ReportsUserControl()
         {
             InitializeComponent();
+        }
+
+        private void RecordsScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Handled || sender is not ScrollViewer scrollViewer)
+            {
+                return;
+            }
+
+            e.Handled = true;
+
+            var bubbled = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = sender,
+            };
+
+            var parent = VisualTreeHelper.GetParent(scrollViewer) as UIElement;
+
+            parent?.RaiseEvent(bubbled);
         }
     }
 }

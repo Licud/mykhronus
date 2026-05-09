@@ -56,7 +56,8 @@
                                     </Grid.RowDefinitions>
 
                                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden"
-                                                  VerticalAlignment="Center">
+                                                  VerticalAlignment="Center"
+                                                  PreviewMouseWheel="RecordsScrollViewer_PreviewMouseWheel">
 
                                         <ItemsControl ItemsSource="{Binding Path=Records}" HorizontalAlignment="Left">
                                             <ItemsControl.ItemTemplate>
