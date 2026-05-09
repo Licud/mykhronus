@@ -15,12 +15,12 @@
         WindowStyle="None" ResizeMode="CanResize">
 
     <Window.Resources>
-        <DataTemplate DataType="{x:Type viewModels:ActivityUserControlViewModel}">
-            <views:ActivityUserControl />
-        </DataTemplate>
-
         <DataTemplate DataType="{x:Type viewModels:ReportsUserControlViewModel}">
             <views:ReportsUserControl />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type viewModels:DayUserControlViewModel}">
+            <views:DayUserControl />
         </DataTemplate>
     </Window.Resources>
 
@@ -78,11 +78,11 @@
                 </Style>
             </StackPanel.Resources>
 
-            <Button Background="#bb85fc" 
-                        Content="Activities"
-                        Command="{Binding Path=ShowActivityView}" />
+            <Button Background="#bb85fc"
+                        Content="Day"
+                        Command="{Binding Path=ShowDayView}" />
 
-            <Button Background="#bb85fc" 
+            <Button Background="#bb85fc"
                         Content="Reports"
                         Command="{Binding Path=ShowReportsView}" />
 

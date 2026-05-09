@@ -9,9 +9,9 @@ public class ViewModelLocator
     public MainWindowViewModel MainViewModel
         => App.ServiceProvider.GetRequiredService<MainWindowViewModel>();
 
-    public ActivityUserControlViewModel ActivityUserControlViewModel
-        => App.ServiceProvider.GetRequiredService<ActivityUserControlViewModel>();
-
     public ReportsUserControlViewModel ReportsUserControlViewModel
         => App.ServiceProvider.GetRequiredService<ReportsUserControlViewModel>();
+
+    public DayUserControlViewModel DayUserControlViewModel
+        => App.ServiceProvider.GetRequiredService<DayUserControlViewModel>();
 }
