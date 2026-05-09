@@ -22,7 +22,10 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
     private readonly ObservableCollection<DayEntryViewModel> myDayEntries = [];
 
     private DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(1) };
+    private DispatcherTimer autoSaveTimer = new() { Interval = TimeSpan.FromMinutes(3) };
     private DayEntryViewModel currentlyRunningTimerEntry;
+
+    private DateTime? lastSaveTime;
 
     private bool isAddingToMyDay;
 
@@ -42,6 +45,9 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         selectedDate = DateTime.Today;
 
         timer.Tick += Timer_Tick;
+
+        autoSaveTimer.Tick += async (_, _) => await ExecuteSave();
+        autoSaveTimer.Start();
     }
 
     // Properties
@@ -108,6 +114,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     public string TotalDurationDisplay => TotalDuration.ToString();
 
+    public string LastSaveTime => lastSaveTime?.ToShortTimeString() ?? "";
+
     public bool IsTimerRunning => timer.IsEnabled;
 
     public ICommand StartTimer => new RelayCommand(ExecuteGlobalStartTimer, CanExecuteGlobalStartTimer);
@@ -155,6 +163,10 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         {
             await dailyEntryService.Update(currentlyRunningTimerEntry.DayEntry);
         }
+
+        lastSaveTime = DateTime.Now;
+
+        OnPropertyChanged(nameof(LastSaveTime));
     }
 
     // Recent Work Item Methods
@@ -491,5 +503,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
     {
         timer.Stop();
         timer.Tick -= Timer_Tick;
+
+        autoSaveTimer.Stop();
     }
 }

@@ -111,6 +111,14 @@
                     <StackPanel Grid.Column="2" Margin="10" Orientation="Horizontal"
                                 HorizontalAlignment="Right" VerticalAlignment="Center">
 
+                        <Label Width="95" Foreground="#acacac"
+                               HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                               Content="Time Last Saved:" />
+
+                        <Label Foreground="#acacac" Margin="0 0 10 0" Width="40"
+                               HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                               Content="{Binding Path=LastSaveTime}" />
+
                         <Button Background="Green"
                                 Style="{StaticResource ActivityControlButton}"
                                 Visibility="{Binding Path=IsTimerRunning, Converter={StaticResource InverseBoolToVisibility}}"
