@@ -5,8 +5,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-
-using System.Timers;
+using System.Windows.Threading;
 
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
@@ -15,17 +14,17 @@ using MyKhronus.Models.Enums;
 using MyKhronus.WPF.UserControls.EventArguments;
 using MyKhronus.WPF.Utilities;
 
-public class DayUserControlViewModel : MainViewModelControls
+public class DayUserControlViewModel : MainViewModelControls, IDisposable
 {
-    private const int intervalInMilliseconds = 1000;
-
     private readonly IWorkItemService workItemService;
     private readonly IDailyEntryService dailyEntryService;
     private readonly ObservableCollection<RecentWorkItemViewModel> recentWorkItems = [];
     private readonly ObservableCollection<DayEntryViewModel> myDayEntries = [];
 
-    private Timer timer = new Timer(intervalInMilliseconds);
+    private DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private DayEntryViewModel currentlyRunningTimerEntry;
+
+    private bool isAddingToMyDay;
 
     public DayUserControlViewModel(IWorkItemService workItemService, IDailyEntryService dailyEntryService)
     {
@@ -42,9 +41,7 @@ public class DayUserControlViewModel : MainViewModelControls
 
         selectedDate = DateTime.Today;
 
-        ReloadCollections();
-
-        timer.Elapsed += Timer_Elapsed;
+        timer.Tick += Timer_Tick;
     }
 
     // Properties
@@ -111,8 +108,10 @@ public class DayUserControlViewModel : MainViewModelControls
 
     public string TotalDurationDisplay => TotalDuration.ToString();
 
+    public ICommand Loaded => new RelayCommand(async () => await ReloadCollections());
+
     public ICommand AddNewEntry => new RelayCommand(async () => await ExecuteAddNewEntry(), CanAddNewEntry);
-        
+
     public ICommand AddAndStartNewEntry => new RelayCommand(async () => await ExecuteAddAndStartNewEntry(), CanAddAndStartNewEntry);
 
     public ICommand PreviousDay => new RelayCommand(() => SelectedDate = SelectedDate.AddDays(-1));
@@ -228,21 +227,35 @@ public class DayUserControlViewModel : MainViewModelControls
 
     private async Task AddWorkItemToMyDay(WorkItem workItem, bool startTimer = false)
     {
-        var currentDayEntry = myDayEntries.FirstOrDefault(e => e.WorkItemId == workItem.Id);
-
-        if (currentDayEntry == null)
+        if (isAddingToMyDay)
         {
-            var dayEntry = await dailyEntryService.Add(selectedDate, workItem.Id);
-
-            currentDayEntry = new DayEntryViewModel(dayEntry, workItem, dailyEntryService);
-
-            AddDayEntry(currentDayEntry);
-            RemoveRecentWorkItem(recentWorkItems.FirstOrDefault(r => r.WorkItemId == workItem.Id));
+            return;
         }
 
-        if (startTimer)
+        isAddingToMyDay = true;
+
+        try
         {
-            StartTimer(currentDayEntry);
+            var currentDayEntry = myDayEntries.FirstOrDefault(e => e.WorkItemId == workItem.Id);
+
+            if (currentDayEntry == null)
+            {
+                var dayEntry = await dailyEntryService.Add(selectedDate, workItem.Id);
+
+                currentDayEntry = new DayEntryViewModel(dayEntry, workItem, dailyEntryService);
+
+                AddDayEntry(currentDayEntry);
+                RemoveRecentWorkItem(recentWorkItems.FirstOrDefault(r => r.WorkItemId == workItem.Id));
+            }
+
+            if (startTimer)
+            {
+                StartTimer(currentDayEntry);
+            }
+        }
+        finally
+        {
+            isAddingToMyDay = false;
         }
     }
 
@@ -268,7 +281,7 @@ public class DayUserControlViewModel : MainViewModelControls
         TotalDuration = TotalDuration.Subtract(viewModel.Duration);
     }
 
-    private void ReloadCollections()
+    private async Task ReloadCollections()
     {
         foreach (var item in recentWorkItems.ToList())
         {
@@ -338,7 +351,7 @@ public class DayUserControlViewModel : MainViewModelControls
 
     // Event Handlers
 
-    private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+    private void Timer_Tick(object sender, EventArgs e)
     {
         currentlyRunningTimerEntry?.AddDuration(TimeSpan.FromSeconds(1));
     }
@@ -415,9 +428,19 @@ public class DayUserControlViewModel : MainViewModelControls
         }
         else if (e.TimerStateChange == TimerStateChange.Stop)
         {
-            currentlyRunningTimerEntry.IsTimerRunning = false;
-            currentlyRunningTimerEntry = null;
-            timer.Stop();
+            viewModel.IsTimerRunning = false;
+
+            if (currentlyRunningTimerEntry == viewModel)
+            {
+                currentlyRunningTimerEntry = null;
+                timer.Stop();
+            }
         }
+    }
+
+    public void Dispose()
+    {
+        timer.Stop();
+        timer.Tick -= Timer_Tick;
     }
 }
