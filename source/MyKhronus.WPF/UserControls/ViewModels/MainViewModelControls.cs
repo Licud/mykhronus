@@ -1,6 +1,6 @@
 ﻿namespace MyKhronus.WPF.UserControls.ViewModels;
 
-using MyKhronus.Commons.Utilities;
+using MyKhronus.WPF.Utilities;
 
 public abstract class MainViewModelControls : NotifyPropertyChanged
 {

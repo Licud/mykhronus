@@ -1,16 +1,12 @@
 ﻿namespace MyKhronus.WPF;
 
 using System.IO;
-using System.Reflection;
 using System.Windows;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using MyKhronus.DataAccess.Context;
-using MyKhronus.DataAccess.Services;
-using MyKhronus.WPF.Services;
+using MyKhronus.DataAccess.DependencyInjection;
 using MyKhronus.WPF.UserControls.ViewModels;
 
 /// <summary>
@@ -32,9 +28,12 @@ public partial class App : Application
         Configuration = builder.Build();
 
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
         ConfigureServices(serviceCollection);
 
         ServiceProvider = serviceCollection.BuildServiceProvider();
+
+        ServiceProvider.EnsureMyKhronusDatabaseCreated();
 
         var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         mainWindow.Show();
@@ -51,16 +50,13 @@ public partial class App : Application
 
         var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation};Integrated Security=True";
 
-        services.AddDbContextFactory<MyKhronusContext>(options => options.UseSqlServer(connectionString));
+        services.UsingMyKhronusDataAccess(configure =>
+        {
+            configure.ConnectionString = connectionString;
+        });
 
-        services.AddScoped<IActivityRecordTimerService, ActivityRecordTimerService>();
-        services.AddScoped<IActivityService, ActivityServices>();
-        services.AddScoped<IActivityRecordsService, ActivityRecordsService>();
-        services.AddScoped<ILockedSessionTimerService, LockedSessionTimerService>();
-        services.AddScoped<IAutoSaveService, AutoSaveService>();
-
-        services.AddScoped<ActivityUserControlViewModel>();
         services.AddScoped<ReportsUserControlViewModel>();
+        services.AddScoped<DayUserControlViewModel>();
         services.AddTransient<MainWindowViewModel>();
 
         services.AddTransient(typeof(MainWindow));
