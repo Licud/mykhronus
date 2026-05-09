@@ -13,13 +13,19 @@ using MyKhronus.WPF.Utilities;
 public class WorkItemReportViewModel : NotifyPropertyChanged
 {
     private readonly WorkItem workItem;
-    private readonly IEnumerable<DayEntry> entries;
+    private readonly IReadOnlyList<DateTime> dateSequence;
+    private readonly IReadOnlyDictionary<DateTime, DayEntry> entriesByDate;
 
-    public WorkItemReportViewModel(WorkItem workItem, IEnumerable<DayEntry> entries)
+    public WorkItemReportViewModel(
+        WorkItem workItem,
+        IEnumerable<DayEntry> entries,
+        IReadOnlyList<DateTime> dateSequence)
     {
         this.workItem = workItem;
 
-        this.entries = entries.OrderBy(e => e.EntryDate);
+        this.dateSequence = dateSequence;
+
+        this.entriesByDate = entries.ToDictionary(e => e.EntryDate.Date);
 
         Records = new ObservableCollection<DayEntryReportViewModel>();
 
@@ -62,9 +68,16 @@ public class WorkItemReportViewModel : NotifyPropertyChanged
 
     private void SetRecords()
     {
-        foreach (var entry in entries)
+        foreach (var date in dateSequence)
         {
-            Records.Add(new DayEntryReportViewModel(entry));
+            if (entriesByDate.TryGetValue(date, out var entry))
+            {
+                Records.Add(new DayEntryReportViewModel(entry));
+            }
+            else
+            {
+                Records.Add(new DayEntryReportViewModel(date));
+            }
         }
     }
 

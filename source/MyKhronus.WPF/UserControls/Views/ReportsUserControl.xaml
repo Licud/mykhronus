@@ -22,9 +22,10 @@
             <ItemsControl ItemsSource="{Binding Path=WorkItemReports}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Margin="0 10" CornerRadius="5" Background="#18161b"
+                        <Border Margin="0 8" CornerRadius="6" Background="#18161b"
+                                BorderBrush="#9c78bf" BorderThickness="3 0 0 0"
                                 Visibility="{Binding Path=IsDisplayed, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
-                            <Grid>
+                            <Grid Margin="6 12 12 12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
@@ -33,11 +34,12 @@
 
                                 <StackPanel VerticalAlignment="Center">
 
-                                    <Label Style="{StaticResource Header}" Margin="10 10 0 0" Content="Description" />
+                                    <Label Foreground="#9c78bf" FontSize="11" FontWeight="SemiBold"
+                                           Margin="10 0 0 4" Content="DESCRIPTION" />
 
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBox Margin="14 0 10 10" Style="{StaticResource NormalTextArea}"
-                                                     AcceptsReturn="True" MinWidth="700" MaxWidth="700" Height="70" TextWrapping="Wrap"
+                                        <TextBox Margin="10 0 10 0" Style="{StaticResource NormalTextArea}"
+                                                     AcceptsReturn="True" MinWidth="700" MaxWidth="700" Height="50" TextWrapping="Wrap"
                                                      VerticalScrollBarVisibility="Auto"
                                                      Text="{Binding Path=Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -47,44 +49,46 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <Grid Grid.Column="1" Margin="50 0">
+                                <Grid Grid.Column="1" Margin="40 0 20 0">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden"
+                                                  VerticalAlignment="Center">
 
                                         <ItemsControl ItemsSource="{Binding Path=Records}" HorizontalAlignment="Left">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                      Margin="10 0 0 0">
+                                                    <Border Background="#221d29" CornerRadius="4"
+                                                            Margin="0 0 8 0" Padding="12 8" Width="110"
+                                                            Visibility="{Binding Path=HasEntry, Converter={StaticResource BoolToHiddenVisibility}}">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
 
-                                                        <Grid.Resources>
-                                                            <Style TargetType="TextBox" BasedOn="{StaticResource NormalTextBox}">
-                                                                <Setter Property="IsReadOnly" Value="True" />
-                                                                <Setter Property="Width" Value="120" />
-                                                                <Setter Property="Margin" Value="0 5 0 0" />
-                                                            </Style>
-                                                        </Grid.Resources>
+                                                            <TextBlock Text="{Binding Path=RecordDate, Mode=OneTime}"
+                                                                       Foreground="#9c78bf" FontSize="11"
+                                                                       FontWeight="SemiBold"
+                                                                       HorizontalAlignment="Center" />
 
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition />
-                                                            <RowDefinition />
-                                                            <RowDefinition />
-                                                        </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="1"
+                                                                       Text="{Binding Path=Duration, Mode=OneTime}"
+                                                                       Foreground="#d8d8d8" FontSize="20"
+                                                                       FontWeight="Bold"
+                                                                       HorizontalAlignment="Center"
+                                                                       Margin="0 4 0 6" />
 
-                                                        <TextBox Grid.Row="0" Text="{Binding Path=RecordDate, Mode=OneTime}" />
-
-                                                        <TextBox Grid.Row="1" Text="{Binding Path=Duration, Mode=OneTime}" />
-
-                                                        <Button Grid.Row="2" Background="#1ddecb"
-                                                                Width="120" Height="25" Margin="0 5 0 0" Content="Copy"
-                                                                Command="{Binding Path=Copy}"/>
-
-                                                    </Grid>
+                                                            <Button Grid.Row="2" Background="#1ddecb"
+                                                                    Width="90" Height="22" Content="Copy"
+                                                                    HorizontalAlignment="Center"
+                                                                    Command="{Binding Path=Copy}" />
+                                                        </Grid>
+                                                    </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
 
@@ -97,13 +101,13 @@
                                     </ScrollViewer>
                                 </Grid>
 
-
-                                <Button Grid.Column="2"
-                                        Background="#bb85fc"
-                                        Margin="10" Width="80" Height="50"
+                                <Button Grid.Column="2" Style="{StaticResource ActivityControlButton}"
+                                        Background="#3a3340"
                                         HorizontalAlignment="Right" VerticalAlignment="Center"
-                                        Content="Hide"
-                                        Command="{Binding Path=Hide, Mode=OneTime}" />
+                                        ToolTip="Hide"
+                                        Command="{Binding Path=Hide, Mode=OneTime}">
+                                    <Image Source="/images/close.png" Height="14" />
+                                </Button>
 
                             </Grid>
                         </Border>
@@ -114,8 +118,9 @@
 
         <Label Grid.Row="2" Style="{StaticResource Header}" Content="Controls" />
 
-        <Border Grid.Row="3" Background="#121212" 
-                    MinHeight="50" Margin="5" CornerRadius="5">
+        <Border Grid.Row="3" Background="#121212"
+                    BorderBrush="#9c78bf" BorderThickness="1"
+                    MinHeight="55" Margin="5" CornerRadius="5">
             <Grid>
 
                 <Grid.ColumnDefinitions>
@@ -123,31 +128,32 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Margin="10" Orientation="Horizontal">
+                <StackPanel Margin="10" Orientation="Horizontal" VerticalAlignment="Center">
 
                     <Label Style="{StaticResource Header}"
-                           Margin="10 0 0 0" Width="50" 
+                           Margin="10 0 0 0" Width="50"
                            HorizontalContentAlignment="Center" VerticalAlignment="Center"
                            Content="From" />
 
-                    <DatePicker Style="{DynamicResource CustomDatePicker}" Width="150" Margin="0 0 10 0" 
-                                VerticalContentAlignment="Center" 
+                    <DatePicker Style="{DynamicResource CustomDatePicker}" Width="150" Margin="0 0 10 0"
+                                VerticalContentAlignment="Center"
                                 SelectedDate="{Binding Path=From, Mode=TwoWay}" />
 
                     <Label Style="{StaticResource Header}"
-                           Margin="10 0 0 0" Width="50" 
+                           Margin="10 0 0 0" Width="50"
                            HorizontalContentAlignment="Center" VerticalAlignment="Center"
                            Content="To" />
 
-                    <DatePicker Style="{DynamicResource CustomDatePicker}" Width="150" Margin="0 0 10 0" 
-                                VerticalContentAlignment="Center" 
+                    <DatePicker Style="{DynamicResource CustomDatePicker}" Width="150" Margin="0 0 10 0"
+                                VerticalContentAlignment="Center"
                                 SelectedDate="{Binding Path=To, Mode=TwoWay}" />
                 </StackPanel>
 
                 <Button Grid.Column="1"
-                        Background="#bb85fc"
-                        Width="100" HorizontalAlignment="Right" 
-                        Margin="10 0" Content="Report" 
+                        Background="#bb85fc" Foreground="#1a1620" FontWeight="SemiBold"
+                        Width="120" Height="32"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Margin="10" Content="Report"
                         Command="{Binding Path=Report}" />
 
             </Grid>

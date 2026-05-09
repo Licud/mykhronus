@@ -67,6 +67,8 @@ public class ReportsUserControlViewModel : MainViewModelControls
 
         var workItemsById = workItems.ToDictionary(w => w.Id);
 
+        var dateSequence = BuildDateSequence(From.Date, To.Date);
+
         var entriesByWorkItem = entries
             .GroupBy(e => e.WorkItemId)
             .Where(g => workItemsById.ContainsKey(g.Key))
@@ -82,7 +84,7 @@ public class ReportsUserControlViewModel : MainViewModelControls
 
             var firstEntry = groupedEntries.OrderBy(e => e.EntryDate).First();
 
-            var viewModel = new WorkItemReportViewModel(workItem, groupedEntries);
+            var viewModel = new WorkItemReportViewModel(workItem, groupedEntries, dateSequence);
 
             if (!reportsByDate.ContainsKey(firstEntry.EntryDate.Date))
             {
@@ -99,5 +101,17 @@ public class ReportsUserControlViewModel : MainViewModelControls
                 WorkItemReports.Add(viewModel);
             }
         }
+    }
+
+    private static IReadOnlyList<DateTime> BuildDateSequence(DateTime from, DateTime to)
+    {
+        var dates = new List<DateTime>();
+
+        for (var date = from; date <= to; date = date.AddDays(1))
+        {
+            dates.Add(date);
+        }
+
+        return dates;
     }
 }
