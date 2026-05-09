@@ -7,13 +7,14 @@ using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.Models.Enums;
+using MyKhronus.WPF.UserControls.EventArguments;
 using MyKhronus.WPF.Utilities;
 
 public class DayEntryViewModel : NotifyPropertyChanged
 {
     public event EventHandler Deleted;
-
     public event EventHandler<DayEntryDurationChangedArgs> DurationChanged;
+    public event EventHandler<TimerStateChangedArgs> TimerStateChanged;
 
     private readonly IDailyEntryService dailyEntryService;
 
@@ -80,12 +81,8 @@ public class DayEntryViewModel : NotifyPropertyChanged
         }
     }
 
-    public ICommand Add => new RelayCommand(async () => await ExecuteAdd(), () => addMinutes.HasValue);
-
-    private async Task ExecuteAdd()
+    public void AddDuration(TimeSpan delta)
     {
-        var delta = TimeSpan.FromMinutes(addMinutes!.Value);
-
         Duration = Duration.Add(delta);
 
         dayEntry = dayEntry with { Duration = Duration };
@@ -95,36 +92,41 @@ public class DayEntryViewModel : NotifyPropertyChanged
             DurationChange = delta,
             DurationChangeReason = DurationChangeReason.Add
         });
-
-        await dailyEntryService.Update(dayEntry);
     }
 
-    public ICommand Subtract => new RelayCommand(async () => await ExecuteSubtract(), () => addMinutes.HasValue);
+    public ICommand Add => new RelayCommand(ExecuteAdd, () => addMinutes.HasValue);
 
-    private async Task ExecuteSubtract()
+    private void ExecuteAdd()
+    {
+        AddDuration(TimeSpan.FromMinutes(addMinutes.Value));
+    }
+
+    public ICommand Subtract => new RelayCommand(ExecuteSubtract, () => addMinutes.HasValue);
+
+    private void ExecuteSubtract()
     {
         var delta = TimeSpan.FromMinutes(addMinutes!.Value);
         var result = dayEntry.Duration.Subtract(delta);
 
-        if (result >= TimeSpan.Zero)
+        if (result < TimeSpan.Zero)
         {
-            Duration = result;
-
-            dayEntry = dayEntry with { Duration = Duration };
-
-            DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
-            {
-                DurationChange = delta,
-                DurationChangeReason = DurationChangeReason.Subtract
-            });
-
-            await dailyEntryService.Update(dayEntry);
+            return;
         }
+
+        Duration = result;
+
+        dayEntry = dayEntry with { Duration = Duration };
+
+        DurationChanged?.Invoke(this, new DayEntryDurationChangedArgs
+        {
+            DurationChange = delta,
+            DurationChangeReason = DurationChangeReason.Subtract
+        });
     }
 
-    public ICommand Reset => new RelayCommand(async () => await ExecuteResetAsync());
+    public ICommand Reset => new RelayCommand(ExecuteReset);
 
-    private async Task ExecuteResetAsync()
+    private void ExecuteReset()
     {
         var previous = Duration;
 
@@ -137,13 +139,27 @@ public class DayEntryViewModel : NotifyPropertyChanged
             DurationChange = previous,
             DurationChangeReason = DurationChangeReason.Reset
         });
-
-        await dailyEntryService.Update(dayEntry);
     }
 
-    public ICommand StartTimer => new RelayCommand(() => { });
+    public ICommand StartTimer => new RelayCommand(ExecuteStartTimer, CanExecuteStartTimer);
 
-    public ICommand PauseTimer => new RelayCommand(() => { });
+    private void ExecuteStartTimer()
+    {
+        TimerStateChanged?.Invoke(this, new TimerStateChangedArgs
+        {
+            TimerStateChange = TimerStateChange.Start
+        });
+    }
+
+    private bool CanExecuteStartTimer() => dayEntry.EntryDate.Date == DateTime.Today;
+
+    public ICommand StopTimer => new RelayCommand(() => 
+    {
+        TimerStateChanged?.Invoke(this, new TimerStateChangedArgs
+        {
+            TimerStateChange = TimerStateChange.Stop
+        });
+    });
 
     public ICommand Delete => new RelayCommand(async () =>
     {

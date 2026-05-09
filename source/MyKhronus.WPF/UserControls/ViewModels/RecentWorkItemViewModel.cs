@@ -7,7 +7,7 @@ using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.DataAccess.WorkItems.Services;
 using MyKhronus.WPF.Utilities;
 
-public class RecentWorkItemViewModel(WorkItem workItem, IWorkItemService workItemService) : NotifyPropertyChanged
+public class RecentWorkItemViewModel(WorkItem workItem, IWorkItemService workItemService, bool canStartTimer) : NotifyPropertyChanged
 {
     public event EventHandler Deleted;
     public event EventHandler AddedToMyDay;
@@ -21,7 +21,9 @@ public class RecentWorkItemViewModel(WorkItem workItem, IWorkItemService workIte
 
     public ICommand AddToMyDay => new RelayCommand(() => AddedToMyDay?.Invoke(this, EventArgs.Empty));
 
-    public ICommand StartAddToMyDay => new RelayCommand(() => StartedAndAddedToMyDay?.Invoke(this, EventArgs.Empty));
+    public ICommand StartAddToMyDay => new RelayCommand(
+        () => StartedAndAddedToMyDay?.Invoke(this, EventArgs.Empty), 
+        () => canStartTimer);
 
     public ICommand Delete => new RelayCommand(async () => 
     {

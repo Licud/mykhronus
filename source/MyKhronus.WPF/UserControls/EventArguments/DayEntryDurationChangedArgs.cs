@@ -1,4 +1,4 @@
-namespace MyKhronus.WPF.UserControls.ViewModels;
+namespace MyKhronus.WPF.UserControls.EventArguments;
 
 using MyKhronus.Models.Enums;
 
