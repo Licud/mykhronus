@@ -83,6 +83,24 @@ internal class DailyEntryRepository(
         return (IReadOnlyList<DayEntry>)result;
     }
 
+    public async Task<IReadOnlyList<DayEntry>> GetEntriesBetween(DateTime from, DateTime to)
+    {
+        logger.LogTrace("Getting entries between {from} and {to}", from, to);
+
+        var fromDate = from.Date;
+        var toDate = to.Date;
+
+        var query = context.DayEntries.Where(e => e.EntryDate >= fromDate && e.EntryDate <= toDate);
+
+        var result = await query
+            .Select(e => new DayEntry(e.EntryDate, e.WorkItemId, e.Duration))
+            .ToListAsync();
+
+        logger.LogDebug("Got {count} entries between {from} and {to}", result.Count, from, to);
+
+        return (IReadOnlyList<DayEntry>)result;
+    }
+
     public async Task Update(DayEntry dayEntry)
     {
         logger.LogTrace(

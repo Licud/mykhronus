@@ -1,23 +1,29 @@
-﻿namespace MyKhronus.WPF.UserControls.ViewModels;
+namespace MyKhronus.WPF.UserControls.ViewModels;
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
-using MyKhronus.DataAccess.Services;
+using MyKhronus.DataAccess.DayEntries.Services;
+using MyKhronus.DataAccess.WorkItems.Models;
+using MyKhronus.DataAccess.WorkItems.Services;
 using MyKhronus.WPF.Extenstions;
 using MyKhronus.WPF.Utilities;
 using MyKhronus.WPF.ViewModels;
 
 public class ReportsUserControlViewModel : MainViewModelControls
 {
-    private readonly IActivityService activityService;
+    private readonly IDailyEntryService dailyEntryService;
+    private readonly IWorkItemService workItemService;
 
-    public ReportsUserControlViewModel(IActivityService activityService)
+    public ReportsUserControlViewModel(
+        IDailyEntryService dailyEntryService,
+        IWorkItemService workItemService)
     {
-        this.activityService = activityService;
+        this.dailyEntryService = dailyEntryService;
+        this.workItemService = workItemService;
 
-        ActivityReports = new ObservableCollection<ActivityReportViewModel>();
+        WorkItemReports = new ObservableCollection<WorkItemReportViewModel>();
 
         From = DateTime.Today.GetMondayDateOfWeek();
         To = From.AddDays(4);
@@ -47,46 +53,50 @@ public class ReportsUserControlViewModel : MainViewModelControls
         }
     }
 
-    public ObservableCollection<ActivityReportViewModel> ActivityReports { get; }
+    public ObservableCollection<WorkItemReportViewModel> WorkItemReports { get; }
 
-    public ICommand Report => new RelayCommand(ExecuteReport, () => To.Date > From.Date);
+    public ICommand Report => new RelayCommand(async () => await ExecuteReport(), () => To.Date > From.Date);
 
-    private void ExecuteReport()
+    private async Task ExecuteReport()
     {
-        ActivityReports.Clear();
+        WorkItemReports.Clear();
 
-        var activityRecords = activityService
-            .GetRecordsBetween(From, To)
-            .GroupBy(ar => ar.Activity.ActivityId)
-            .Select(a => new { ActivityId = a.Key, Records = a.Select(ai => ai) })
+        var entries = await dailyEntryService.GetEntriesBetween(From, To);
+
+        var workItems = await workItemService.Get(new WorkItemGetFilter());
+
+        var workItemsById = workItems.ToDictionary(w => w.Id);
+
+        var entriesByWorkItem = entries
+            .GroupBy(e => e.WorkItemId)
+            .Where(g => workItemsById.ContainsKey(g.Key))
             .ToList();
 
-        var activityDictionary = new Dictionary<DateTime, List<ActivityReportViewModel>>();
+        var reportsByDate = new Dictionary<DateTime, List<WorkItemReportViewModel>>();
 
-        foreach (var activityRecord in activityRecords)
+        foreach (var group in entriesByWorkItem)
         {
-            var firstRecord = activityRecord
-                .Records
-                .OrderBy(r => r.RecordDate.Date)
-                .First();
+            var workItem = workItemsById[group.Key];
 
-            var viewModel = (new ActivityReportViewModel(firstRecord.Activity, activityRecord.Records));
+            var groupedEntries = group.ToList();
 
-            if (!activityDictionary.ContainsKey(firstRecord.RecordDate.Date))
+            var firstEntry = groupedEntries.OrderBy(e => e.EntryDate).First();
+
+            var viewModel = new WorkItemReportViewModel(workItem, groupedEntries);
+
+            if (!reportsByDate.ContainsKey(firstEntry.EntryDate.Date))
             {
-                var newViewModelList = new List<ActivityReportViewModel>();
-
-                activityDictionary.Add(firstRecord.RecordDate.Date, newViewModelList);
+                reportsByDate.Add(firstEntry.EntryDate.Date, new List<WorkItemReportViewModel>());
             }
 
-            activityDictionary[firstRecord.RecordDate.Date].Add(viewModel);
+            reportsByDate[firstEntry.EntryDate.Date].Add(viewModel);
         }
 
-        foreach (var key in activityDictionary.Keys.OrderBy(k => k))
+        foreach (var key in reportsByDate.Keys.OrderBy(k => k))
         {
-            foreach (var viewModel in activityDictionary[key])
+            foreach (var viewModel in reportsByDate[key])
             {
-                ActivityReports.Add(viewModel);
+                WorkItemReports.Add(viewModel);
             }
         }
     }
