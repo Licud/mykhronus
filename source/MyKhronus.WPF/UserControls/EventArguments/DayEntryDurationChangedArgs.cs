@@ -1,6 +1,6 @@
 namespace MyKhronus.WPF.UserControls.EventArguments;
 
-using MyKhronus.Models.Enums;
+using MyKhronus.WPF.Enums;
 
 public class DayEntryDurationChangedArgs : EventArgs
 {

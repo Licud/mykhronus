@@ -2,7 +2,6 @@ namespace MyKhronus.WPF.UserControls.ViewModels;
 
 using System.Windows.Input;
 
-using MyKhronus.Commons.Utilities;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.DataAccess.WorkItems.Services;
 using MyKhronus.WPF.Utilities;

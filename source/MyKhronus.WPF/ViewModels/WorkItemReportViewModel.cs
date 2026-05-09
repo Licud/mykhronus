@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 
-using MyKhronus.Commons.Utilities;
 using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.WPF.Utilities;

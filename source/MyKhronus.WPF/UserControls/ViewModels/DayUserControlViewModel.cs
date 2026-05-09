@@ -10,7 +10,7 @@ using System.Windows.Threading;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.DataAccess.WorkItems.Services;
-using MyKhronus.Models.Enums;
+using MyKhronus.WPF.Enums;
 using MyKhronus.WPF.UserControls.EventArguments;
 using MyKhronus.WPF.Utilities;
 

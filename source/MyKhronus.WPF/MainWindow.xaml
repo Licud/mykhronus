@@ -15,10 +15,6 @@
         WindowStyle="None" ResizeMode="CanResize">
 
     <Window.Resources>
-        <DataTemplate DataType="{x:Type viewModels:ActivityUserControlViewModel}">
-            <views:ActivityUserControl />
-        </DataTemplate>
-
         <DataTemplate DataType="{x:Type viewModels:ReportsUserControlViewModel}">
             <views:ReportsUserControl />
         </DataTemplate>
@@ -85,10 +81,6 @@
             <Button Background="#bb85fc"
                         Content="Day"
                         Command="{Binding Path=ShowDayView}" />
-
-            <Button Background="#bb85fc" 
-                        Content="Activities"
-                        Command="{Binding Path=ShowActivityView}" />
 
             <Button Background="#bb85fc"
                         Content="Reports"

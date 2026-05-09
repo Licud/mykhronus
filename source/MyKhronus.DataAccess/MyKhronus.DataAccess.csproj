@@ -20,17 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyKhronus.Models\MyKhronus.Models.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="MyKhronusData.mdf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\MyKhronus\" />
   </ItemGroup>
 
 </Project>

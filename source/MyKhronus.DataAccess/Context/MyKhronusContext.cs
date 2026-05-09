@@ -7,10 +7,6 @@ using MyKhronus.DataAccess.Extensions;
 
 internal class MyKhronusContext(DbContextOptions<MyKhronusContext> options) : DbContext(options)
 {
-    public DbSet<Activity> Activities { get; set; }
-
-    public DbSet<ActivityRecord> ActivityRecords { get; set; }
-
     public DbSet<WorkItem> WorkItems { get; set; }
 
     public DbSet<Project> Projects { get; set; }

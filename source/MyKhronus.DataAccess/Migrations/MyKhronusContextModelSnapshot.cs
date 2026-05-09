@@ -8,7 +8,7 @@ using MyKhronus.DataAccess.Context;
 
 #nullable disable
 
-namespace MyKhronus.DataAccess.Migrations.MyKhronus
+namespace MyKhronus.DataAccess.Migrations
 {
     [DbContext(typeof(MyKhronusContext))]
     partial class MyKhronusContextModelSnapshot : ModelSnapshot
@@ -22,46 +22,6 @@ namespace MyKhronus.DataAccess.Migrations.MyKhronus
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("MyKhronus.DataAccess.Entities.Activity", b =>
-                {
-                    b.Property<Guid>("ActivityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ActivityId");
-
-                    b.ToTable("Activity", "mk");
-                });
-
-            modelBuilder.Entity("MyKhronus.DataAccess.Entities.ActivityRecord", b =>
-                {
-                    b.Property<Guid>("ActivityRecordId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ActivityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<TimeSpan>("Duration")
-                        .HasColumnType("time");
-
-                    b.Property<DateTime>("RecordDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ActivityRecordId");
-
-                    b.HasIndex("ActivityId");
-
-                    b.ToTable("ActivityRecord", "mk");
-                });
 
             modelBuilder.Entity("MyKhronus.DataAccess.Entities.DayEntry", b =>
                 {
@@ -117,17 +77,6 @@ namespace MyKhronus.DataAccess.Migrations.MyKhronus
                     b.ToTable("WorkItem", "mk");
                 });
 
-            modelBuilder.Entity("MyKhronus.DataAccess.Entities.ActivityRecord", b =>
-                {
-                    b.HasOne("MyKhronus.DataAccess.Entities.Activity", "Activity")
-                        .WithMany("Records")
-                        .HasForeignKey("ActivityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Activity");
-                });
-
             modelBuilder.Entity("MyKhronus.DataAccess.Entities.WorkItem", b =>
                 {
                     b.HasOne("MyKhronus.DataAccess.Entities.Project", "Project")
@@ -135,11 +84,6 @@ namespace MyKhronus.DataAccess.Migrations.MyKhronus
                         .HasForeignKey("ProjectId");
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("MyKhronus.DataAccess.Entities.Activity", b =>
-                {
-                    b.Navigation("Records");
                 });
 
             modelBuilder.Entity("MyKhronus.DataAccess.Entities.Project", b =>

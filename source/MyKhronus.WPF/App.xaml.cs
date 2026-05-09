@@ -3,14 +3,10 @@
 using System.IO;
 using System.Windows;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using MyKhronus.DataAccess.Context;
 using MyKhronus.DataAccess.DependencyInjection;
-using MyKhronus.DataAccess.Services;
-using MyKhronus.WPF.Services;
 using MyKhronus.WPF.UserControls.ViewModels;
 
 /// <summary>
@@ -37,6 +33,8 @@ public partial class App : Application
 
         ServiceProvider = serviceCollection.BuildServiceProvider();
 
+        ServiceProvider.EnsureMyKhronusDatabaseCreated();
+
         var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         mainWindow.Show();
     }
@@ -52,24 +50,11 @@ public partial class App : Application
 
         var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation};Integrated Security=True";
 
-        var databaseLocation2 = Path.Combine(Environment.CurrentDirectory, "Data", "MyKhronusData2.mdf");
-
-        var connectionString2 = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation2};Initial Catalog=MyKhronusData2;Integrated Security=True";
-
-        services.AddDbContextFactory<MyKhronusContext_old>(options => options.UseSqlServer(connectionString));
-
         services.UsingMyKhronusDataAccess(configure =>
         {
-            configure.ConnectionString = connectionString2;
+            configure.ConnectionString = connectionString;
         });
 
-        services.AddScoped<IActivityRecordTimerService, ActivityRecordTimerService>();
-        services.AddScoped<IActivityService, ActivityServices>();
-        services.AddScoped<IActivityRecordsService, ActivityRecordsService>();
-        services.AddScoped<ILockedSessionTimerService, LockedSessionTimerService>();
-        services.AddScoped<IAutoSaveService, AutoSaveService>();
-
-        services.AddScoped<ActivityUserControlViewModel>();
         services.AddScoped<ReportsUserControlViewModel>();
         services.AddScoped<DayUserControlViewModel>();
         services.AddTransient<MainWindowViewModel>();

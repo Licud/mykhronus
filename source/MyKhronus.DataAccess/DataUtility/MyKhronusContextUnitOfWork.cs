@@ -3,8 +3,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-using MyKhronus.DataAccess.Activities.Repositories;
-using MyKhronus.DataAccess.ActivityRecords.Repositories;
 using MyKhronus.DataAccess.Context;
 using MyKhronus.DataAccess.DayEntries.Repositories;
 using MyKhronus.DataAccess.Projects.Repositories;
@@ -16,23 +14,11 @@ internal class MyKhronusContextUnitOfWork(
     : IUnitOfWork
 {
     private MyKhronusContext context = contextFactory.CreateDbContext();
-    private ActivityRepository activityRepository;
-    private ActivityRecordRepository activityRecordRepository;
     private WorkItemRepository workItemRepository;
     private ProjectRepository projectRepository;
     private DailyEntryRepository dailyEntryRepository;
 
     private bool isDisposed = false;
-
-    public IActivityRepository GetActivityRepository()
-    {
-        return activityRepository ??= new ActivityRepository(context);
-    }
-
-    public IActivityRecordRepository GetActivityRecordRepository()
-    {
-        return activityRecordRepository ??= new ActivityRecordRepository(context);
-    }
 
     public IWorkItemRepository GetWorkItemRepository()
     {
