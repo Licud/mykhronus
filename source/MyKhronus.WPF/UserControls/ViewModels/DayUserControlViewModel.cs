@@ -2,12 +2,14 @@ namespace MyKhronus.WPF.UserControls.ViewModels;
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 
 using MyKhronus.DataAccess.DayEntries.Services;
+using MyKhronus.DataAccess.Projects.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.DataAccess.WorkItems.Services;
 using MyKhronus.WPF.Enums;
@@ -18,6 +20,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 {
     private readonly IWorkItemService workItemService;
     private readonly IDailyEntryService dailyEntryService;
+    private readonly IProjectService projectService;
     private readonly ObservableCollection<RecentWorkItemViewModel> recentWorkItems = [];
     private readonly ObservableCollection<DayEntryViewModel> myDayEntries = [];
 
@@ -29,10 +32,14 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     private bool isAddingToMyDay;
 
-    public DayUserControlViewModel(IWorkItemService workItemService, IDailyEntryService dailyEntryService)
+    public DayUserControlViewModel(
+        IWorkItemService workItemService, 
+        IDailyEntryService dailyEntryService,
+        IProjectService projectService)
     {
         this.workItemService = workItemService;
         this.dailyEntryService = dailyEntryService;
+        this.projectService = projectService;
 
         RecentWorkItems = CollectionViewSource.GetDefaultView(recentWorkItems);
         RecentWorkItems.Filter = new Predicate<object>(WorkItemNameContains);
@@ -94,7 +101,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             if (selectedDate.Date != value.Date)
             {
                 selectedDate = value;
-                ReloadCollections();
+                AsyncWrapper(ReloadCollections);
                 OnPropertyChanged();
             }
         }
@@ -112,6 +119,19 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         }
     }
 
+    private ProjectPickerViewModel projectPicker;
+
+    public ProjectPickerViewModel ProjectPicker
+    {
+        get { return projectPicker; }
+        set 
+        { 
+            projectPicker = value; 
+            OnPropertyChanged();
+        }
+    }
+
+
     public string TotalDurationDisplay => TotalDuration.ToString();
 
     public string LastSaveTime => lastSaveTime?.ToShortTimeString() ?? "";
@@ -124,7 +144,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     public ICommand Save => new RelayCommand(async () => await ExecuteSave());
 
-    public ICommand Loaded => new RelayCommand(async () => await ReloadCollections());
+    public ICommand Loaded => new RelayCommand(async () => await InitializeLoad());
 
     public ICommand AddNewEntry => new RelayCommand(async () => await ExecuteAddNewEntry(), CanAddNewEntry);
 
@@ -337,6 +357,12 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         TotalDuration = TotalDuration.Subtract(viewModel.Duration);
     }
 
+    private async Task InitializeLoad()
+    {
+        await ReloadCollections();
+        ProjectPicker = await CreateProjectPickerViewModel();
+    }
+
     private async Task ReloadCollections()
     {
         foreach (var item in recentWorkItems.ToList())
@@ -386,6 +412,15 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         {
             AddDayEntry(currentlyRunningTimerEntry, 0);
         }
+    }
+
+    private async Task<ProjectPickerViewModel> CreateProjectPickerViewModel()
+    {
+        var projects = await projectService.Get();
+
+        var projectPicker = new ProjectPickerViewModel(projectService, projects);
+
+        return projectPicker;
     }
 
     private async Task<WorkItem> ResolveWorkItem(IDictionary<Guid, WorkItem> workItems, Guid workItemId)
@@ -496,6 +531,18 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
                 OnPropertyChanged(nameof(IsTimerRunning));
             }
+        }
+    }
+
+    private async void AsyncWrapper(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Unhandled async error: {ex}");
         }
     }
 

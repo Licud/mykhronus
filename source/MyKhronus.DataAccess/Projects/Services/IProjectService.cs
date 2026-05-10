@@ -9,6 +9,8 @@ public interface IProjectService
 {
     Task<Project> Add(NewProject project);
 
+    Task<IEnumerable<Project>> Get();
+
     Task<IEnumerable<Project>> Get(ProjectGetFilter filter);
 
     Task Delete(int projectId);

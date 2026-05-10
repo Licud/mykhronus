@@ -34,4 +34,9 @@ internal class ProjectService(IUnitOfWork unitOfWork) : IProjectService
 
         return await repository.Get(filter);
     }
+
+    public Task<IEnumerable<Project>> Get()
+    {
+        return Get(new ProjectGetFilter());
+    }
 }

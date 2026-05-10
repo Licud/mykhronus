@@ -5,19 +5,34 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Input;
 
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+
 using MyKhronus.DataAccess.Projects.Models;
+using MyKhronus.DataAccess.Projects.Services;
+using MyKhronus.WPF.Messages;
 using MyKhronus.WPF.Utilities;
 
-public class ProjectPickerViewModel : NotifyPropertyChanged
+public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedMessage>
 {
     private readonly ObservableCollection<Project> allProjects = [];
+    private readonly IProjectService projectService;
 
     private Project selectedProject;
     private string filterText = "";
     private bool isDropDownOpen;
 
-    public ProjectPickerViewModel()
+    public ProjectPickerViewModel(IProjectService projectService, IEnumerable<Project> projects)
     {
+        WeakReferenceMessenger.Default.Register(this);
+
+        this.projectService = projectService;
+
+        foreach (var item in projects)
+        {
+            allProjects.Add(item);
+        }
+
         var cvs = new CollectionViewSource { Source = allProjects };
 
         FilteredProjects = cvs.View;
@@ -65,13 +80,17 @@ public class ProjectPickerViewModel : NotifyPropertyChanged
             OnPropertyChanged();
 
             if (value)
+            {
                 FilterText = "";
+            }
         }
     }
 
-    public bool CanAddNew =>
-        !string.IsNullOrWhiteSpace(filterText) &&
+    public bool CanAddNew()
+    {
+        return !string.IsNullOrWhiteSpace(filterText) &&
         !allProjects.Any(p => p.Name.Equals(filterText, StringComparison.OrdinalIgnoreCase));
+    }
 
     public ICommand ToggleDropDown => new RelayCommand(() => IsDropDownOpen = !IsDropDownOpen);
 
@@ -83,7 +102,7 @@ public class ProjectPickerViewModel : NotifyPropertyChanged
         ProjectChanged?.Invoke(this, EventArgs.Empty);
     });
 
-    public ICommand AddNewProject => new RelayCommand(ExecuteAddNewProject, () => CanAddNew);
+    public ICommand AddNewProject => new RelayCommand(async () => await ExecuteAddNewProject(), CanAddNew);
 
     public void SelectProject(Project project)
     {
@@ -91,17 +110,6 @@ public class ProjectPickerViewModel : NotifyPropertyChanged
         IsDropDownOpen = false;
         FilterText = "";
         ProjectChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void LoadProjects(IEnumerable<Project> projects, int? selectedProjectId = null)
-    {
-        allProjects.Clear();
-
-        foreach (var project in projects.OrderBy(p => p.Name))
-            allProjects.Add(project);
-
-        if (selectedProjectId.HasValue)
-            SelectedProject = allProjects.FirstOrDefault(p => p.Id == selectedProjectId.Value);
     }
 
     public void AddProject(Project project)
@@ -118,12 +126,28 @@ public class ProjectPickerViewModel : NotifyPropertyChanged
         ProjectChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ExecuteAddNewProject()
+    private async Task ExecuteAddNewProject()
     {
-        // Stub — caller creates the project then calls AddProject(result)
+        var project = new NewProject(FilterText);
+
+        var saved = await projectService.Add(project);
+
+        WeakReferenceMessenger.Default.Send(new ProjectAddedMessage(saved));
+
+        FilterText = "";
     }
 
-    private bool FilterProjects(object obj) =>
-        string.IsNullOrEmpty(filterText) ||
-        obj is Project project && project.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+    private bool FilterProjects(object obj)
+    {
+        var projectContainsFilter = obj is Project project && project.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+
+        return string.IsNullOrEmpty(filterText) || projectContainsFilter;  
+    }
+
+    public void Receive(ProjectAddedMessage message)
+    {
+        allProjects.Add(message.Project);
+
+        SelectedProject = message.Project;
+    }
 }
