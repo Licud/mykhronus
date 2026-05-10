@@ -1,0 +1,147 @@
+<UserControl x:Class="MyKhronus.WPF.UserControls.Views.ProjectPickerUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="25" d:DesignWidth="200">
+
+    <Border Background="#2e2e2e" CornerRadius="3" Height="25" x:Name="RootBorder">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="20" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Clickable display area showing selected project or placeholder -->
+            <Button Grid.ColumnSpan="2"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    HorizontalContentAlignment="Left"
+                    Command="{Binding ToggleDropDown}">
+                <TextBlock Text="{Binding PlaceholderText}"
+                           Foreground="#757575"
+                           Margin="6 0 22 0"
+                           VerticalAlignment="Center" />
+            </Button>
+
+            <!-- Dropdown arrow -->
+            <TextBlock Grid.Column="1"
+                       Text="▾"
+                       Foreground="#bb85fc"
+                       FontSize="10"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       IsHitTestVisible="False" />
+
+            <!-- Popup — filter TextBox lives inside so StaysOpen=False works correctly -->
+            <Popup Grid.ColumnSpan="2"
+                   IsOpen="{Binding IsDropDownOpen, Mode=TwoWay}"
+                   PlacementTarget="{Binding ElementName=RootBorder}"
+                   Placement="Bottom"
+                   StaysOpen="False"
+                   AllowsTransparency="True"
+                   MinWidth="{Binding ActualWidth, ElementName=RootBorder}"
+                   Opened="Popup_Opened">
+
+                <Border Background="#2e2e2e"
+                        CornerRadius="3"
+                        BorderBrush="#9c78bf"
+                        BorderThickness="1"
+                        Padding="4">
+
+                    <StackPanel>
+
+                        <!-- Filter TextBox -->
+                        <TextBox x:Name="FilterBox"
+                                 Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="#3a3a3a"
+                                 Foreground="#d8d8d8"
+                                 BorderBrush="#555"
+                                 BorderThickness="1"
+                                 Height="25"
+                                 Margin="0 0 0 4"
+                                 VerticalContentAlignment="Center"
+                                 Padding="5 0" />
+
+                        <!-- None / clear option -->
+                        <Button Content="None"
+                                HorizontalContentAlignment="Left"
+                                Padding="5 4"
+                                Foreground="#acacac"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Command="{Binding ClearProject}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#3a3a4a" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Add new project option -->
+                        <Button HorizontalContentAlignment="Left"
+                                Padding="5 4"
+                                Foreground="#bb85fc"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Command="{Binding AddNewProject}"
+                                Visibility="{Binding CanAddNew, Converter={StaticResource BoolToVisibility}}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#3a3a4a" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock>
+                                <Run Text='Add "' /><Run Text="{Binding FilterText}" /><Run Text='"' />
+                            </TextBlock>
+                        </Button>
+
+                        <Separator Background="#444" Margin="2 2" Height="1" />
+
+                        <!-- Project list -->
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="160">
+                            <ItemsControl ItemsSource="{Binding FilteredProjects}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button HorizontalContentAlignment="Left"
+                                                Padding="5 4"
+                                                Foreground="#d8d8d8"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Tag="{Binding}"
+                                                Click="ProjectItem_Click">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#3a3a4a" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                            <TextBlock Text="{Binding Name}" />
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+        </Grid>
+    </Border>
+</UserControl>
