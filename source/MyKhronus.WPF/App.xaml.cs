@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using MyKhronus.DataAccess.DependencyInjection;
+using MyKhronus.WPF.Builders;
 using MyKhronus.WPF.UserControls.ViewModels;
 
 /// <summary>
@@ -54,6 +55,9 @@ public partial class App : Application
         {
             configure.ConnectionString = connectionString;
         });
+
+        services.AddTransient<ProjectPickerViewModelFactory>();
+        services.AddTransient<DayEntryViewModelFactory>();
 
         services.AddScoped<ReportsUserControlViewModel>();
         services.AddScoped<DayUserControlViewModel>();

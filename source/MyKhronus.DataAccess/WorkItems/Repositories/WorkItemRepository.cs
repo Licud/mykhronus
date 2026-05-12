@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using MyKhronus.DataAccess.Context;
+using MyKhronus.DataAccess.Projects.Models;
 using MyKhronus.DataAccess.WorkItems.Models;
 
 internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusContext context) : IWorkItemRepository
@@ -48,7 +49,9 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
     {
         logger.LogTrace("Getting work items with filter: {@Filter}", filter);
 
-        var query = context.WorkItems.AsQueryable();
+        var query = context.WorkItems
+            .Include(w => w.Project)
+            .AsQueryable();
 
         if (filter.WorkItemId.HasValue)
         {
@@ -60,9 +63,21 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             query = query.Where(w => w.Description == filter.Description);
         }
 
-        var models = await query
-            .Select(w => new WorkItem(w.Id, w.Description, w.LastUsed))
-            .ToListAsync();
+        var results = await query.ToListAsync();
+
+        var models = new List<WorkItem>();
+
+        foreach (var item in results)
+        {
+            Project project = null;
+
+            if (item.Project != null)
+            {
+                project = new Project(item.Project.Id, item.Project.Name);
+            }
+        
+            models.Add(new WorkItem(item.Id, item.Description, item.LastUsed, project));
+        }
 
         logger.LogDebug("Retrieved {Count} work items with filter: {@Filter}", models.Count, filter);
 

@@ -15,6 +15,8 @@ using MyKhronus.WPF.Utilities;
 
 public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedMessage>
 {
+    public event EventHandler ProjectChanged;
+
     private readonly ObservableCollection<Project> allProjects = [];
     private readonly IProjectService projectService;
 
@@ -39,14 +41,12 @@ public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedM
         FilteredProjects.Filter = FilterProjects;
     }
 
-    public event EventHandler ProjectChanged;
-
     public ICollectionView FilteredProjects { get; }
 
     public Project SelectedProject
     {
         get => selectedProject;
-        private set
+        set
         {
             selectedProject = value;
             OnPropertyChanged();
@@ -114,29 +114,15 @@ public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedM
         ProjectChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public void AddProject(Project project)
-    {
-        var insertIndex = allProjects
-            .TakeWhile(p => string.Compare(p.Name, project.Name, StringComparison.OrdinalIgnoreCase) < 0)
-            .Count();
-
-        allProjects.Insert(insertIndex, project);
-
-        SelectedProject = project;
-        IsDropDownOpen = false;
-        FilterText = "";
-        ProjectChanged?.Invoke(this, EventArgs.Empty);
-    }
-
     private async Task ExecuteAddNewProject()
     {
         var project = new NewProject(FilterText);
 
         var saved = await projectService.Add(project);
 
-        WeakReferenceMessenger.Default.Send(new ProjectAddedMessage(saved));
+        SelectedProject = saved;
 
-        FilterText = "";
+        WeakReferenceMessenger.Default.Send(new ProjectAddedMessage(saved));
     }
 
     private bool FilterProjects(object obj)
@@ -149,7 +135,5 @@ public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedM
     public void Receive(ProjectAddedMessage message)
     {
         allProjects.Add(message.Project);
-
-        SelectedProject = message.Project;
     }
 }
