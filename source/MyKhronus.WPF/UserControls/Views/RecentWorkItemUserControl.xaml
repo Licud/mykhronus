@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:MyKhronus.WPF.UserControls.Views"
              mc:Ignorable="d"
-             d:DesignHeight="78" d:DesignWidth="800">
+             d:DesignHeight="86" d:DesignWidth="800">
 
     <Border x:Name="RootBorder"
             CornerRadius="4"
@@ -33,7 +33,6 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Left accent rail -->
             <Border Grid.Column="0"
                     CornerRadius="4 0 0 4">
                 <Border.Style>
@@ -49,29 +48,41 @@
                 </Border.Style>
             </Border>
 
-            <!-- Content: name on top, project pill underneath -->
             <StackPanel Grid.Column="1"
                         Orientation="Vertical"
                         VerticalAlignment="Center"
                         Margin="12 8 8 8">
 
                 <TextBlock Text="{Binding Path=Name, Mode=OneTime}"
+                           ToolTip="{Binding Path=Name, Mode=OneTime}"
                            Foreground="#e8e6ec"
                            FontSize="14"
                            FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           MaxHeight="40"
                            TextTrimming="CharacterEllipsis"
-                           Margin="0 0 0 4" />
+                           Margin="0 0 0 6" />
 
                 <local:ProjectPickerUserControl HorizontalAlignment="Left"
                                                 Width="220"
                                                 DataContext="{Binding Path=ProjectPicker}" />
             </StackPanel>
 
-            <!-- Actions -->
             <StackPanel Grid.Column="2"
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Margin="8 0 8 0">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed" />
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootBorder}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
 
                 <Button Background="#1ddecb" Style="{StaticResource ActivityControlButton}"
                         ToolTip="Add to My Day"
