@@ -5,20 +5,21 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:MyKhronus.WPF.UserControls.Views"
              mc:Ignorable="d"
-             d:DesignHeight="44" d:DesignWidth="800">
+             d:DesignHeight="78" d:DesignWidth="800">
 
-    <Border CornerRadius="3"
+    <Border x:Name="RootBorder"
+            CornerRadius="4"
             BorderThickness="1"
-            Padding="8 4"
-            Margin="0 2">
+            Margin="0 3"
+            SnapsToDevicePixels="True">
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="Background" Value="#2a2a2a" />
-                <Setter Property="BorderBrush" Value="#2a2a2a" />
+                <Setter Property="Background" Value="#262528" />
+                <Setter Property="BorderBrush" Value="#34313a" />
 
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#333335" />
+                        <Setter Property="Background" Value="#2f2c36" />
                         <Setter Property="BorderBrush" Value="#9c78bf" />
                     </Trigger>
                 </Style.Triggers>
@@ -27,27 +28,50 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0"
-                     IsReadOnly="True"
-                     Style="{StaticResource NormalTextBox}"
-                     VerticalContentAlignment="Center"
-                     Height="28"
-                     Margin="0 0 8 0"
-                     Text="{Binding Path=Name, Mode=OneTime}" />
+            <!-- Left accent rail -->
+            <Border Grid.Column="0"
+                    CornerRadius="4 0 0 4">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="#3a3543" />
 
-            <local:ProjectPickerUserControl Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Margin="0 0 8 0"
-                                            DataContext="{Binding Path=ProjectPicker}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootBorder}" Value="True">
+                                <Setter Property="Background" Value="#bb85fc" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
 
+            <!-- Content: name on top, project pill underneath -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Vertical"
+                        VerticalAlignment="Center"
+                        Margin="12 8 8 8">
+
+                <TextBlock Text="{Binding Path=Name, Mode=OneTime}"
+                           Foreground="#e8e6ec"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="0 0 0 4" />
+
+                <local:ProjectPickerUserControl HorizontalAlignment="Left"
+                                                Width="220"
+                                                DataContext="{Binding Path=ProjectPicker}" />
+            </StackPanel>
+
+            <!-- Actions -->
             <StackPanel Grid.Column="2"
                         Orientation="Horizontal"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Margin="8 0 8 0">
 
                 <Button Background="#1ddecb" Style="{StaticResource ActivityControlButton}"
                         ToolTip="Add to My Day"
