@@ -48,6 +48,7 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         logger.LogTrace("Getting work items with filter: {@Filter}", filter);
 
         var query = context.WorkItems
+            .AsNoTracking()
             .Include(w => w.Project)
             .AsQueryable();
 
@@ -89,6 +90,7 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         var item = await context.WorkItems.FindAsync(workItemId);
 
         item.ProjectId = projectId;
+        item.Project = await context.Projects.FindAsync(projectId);
 
         context.Update(item);
 
@@ -104,6 +106,7 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         if (item != null)
         {
             item.ProjectId = null;
+            item.Project = null;
             context.Update(item);
         }
 

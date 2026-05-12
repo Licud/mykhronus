@@ -424,6 +424,11 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         if (runningEntryIsOnThisDate)
         {
+            if (loadedWorkItems.TryGetValue(currentlyRunningTimerEntry.WorkItemId, out var freshWorkItem))
+            {
+                currentlyRunningTimerEntry.ProjectPicker.SelectedProject = freshWorkItem.Project;
+            }
+
             AddDayEntry(currentlyRunningTimerEntry, 0);
         }
     }

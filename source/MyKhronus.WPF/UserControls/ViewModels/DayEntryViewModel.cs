@@ -1,5 +1,6 @@
 namespace MyKhronus.WPF.UserControls.ViewModels;
 
+using System.Windows;
 using System.Windows.Input;
 
 using MyKhronus.DataAccess.DayEntries.Models;
@@ -192,17 +193,24 @@ public class DayEntryViewModel : NotifyPropertyChanged, IDisposable
         Deleted?.Invoke(this, EventArgs.Empty);
     });
 
-    private void ProjectPicker_ProjectChanged(object sender, EventArgs e)
+    private async void ProjectPicker_ProjectChanged(object sender, EventArgs e)
     {
         var projectPicker = sender as ProjectPickerViewModel;
 
-        if (projectPicker == null || projectPicker.SelectedProject == null)
+        try
         {
-            workItemService.UnlinkWorkItemToProject(workItem.Id);
+            if (projectPicker?.SelectedProject == null)
+            {
+                await workItemService.UnlinkWorkItemToProject(workItem.Id);
+            }
+            else
+            {
+                await workItemService.LinkWorkItemToProject(workItem.Id, projectPicker.SelectedProject.Id);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            workItemService.LinkWorkItemToProject(workItem.Id, projectPicker.SelectedProject.Id);
+            MessageBox.Show(ex.ToString(), "Error");
         }
     }
 

@@ -43,7 +43,7 @@ internal class ProjectRepository(ILogger<ProjectRepository> logger, MyKhronusCon
     {
         logger.LogTrace("Getting projects with filter: {@Filter}", filter);
 
-        var query = context.Projects.AsQueryable();
+        var query = context.Projects.AsNoTracking().AsQueryable();
 
         if (filter.Id.HasValue)
         {
