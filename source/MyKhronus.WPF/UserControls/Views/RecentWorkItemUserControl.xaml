@@ -5,21 +5,84 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:MyKhronus.WPF.UserControls.Views"
              mc:Ignorable="d"
-             d:DesignHeight="70" d:DesignWidth="800">
-    <Border Background="#2e2e2e" BorderThickness="1" CornerRadius="2">
+             d:DesignHeight="86" d:DesignWidth="800">
 
-        <Grid Margin="5 10 5 10">
+    <Border x:Name="RootBorder"
+            CornerRadius="4"
+            BorderThickness="1"
+            Margin="0 3"
+            SnapsToDevicePixels="True">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="#262528" />
+                <Setter Property="BorderBrush" Value="#34313a" />
+
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#2f2c36" />
+                        <Setter Property="BorderBrush" Value="#9c78bf" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBox Margin="5" IsReadOnly="True"
-                     Style="{StaticResource NormalTextBox}"
-                     Height="30"
-                     Text="{Binding Path=Name, Mode=OneTime}" />
+            <Border Grid.Column="0"
+                    CornerRadius="4 0 0 4">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="#3a3543" />
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootBorder}" Value="True">
+                                <Setter Property="Background" Value="#bb85fc" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Vertical"
+                        VerticalAlignment="Center"
+                        Margin="12 8 8 8">
+
+                <TextBlock Text="{Binding Path=Name, Mode=OneTime}"
+                           ToolTip="{Binding Path=Name, Mode=OneTime}"
+                           Foreground="#e8e6ec"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           MaxHeight="40"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="0 0 0 6" />
+
+                <local:ProjectPickerUserControl HorizontalAlignment="Left"
+                                                Width="220"
+                                                DataContext="{Binding Path=ProjectPicker}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Margin="8 0 8 0">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed" />
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootBorder}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
 
                 <Button Background="#1ddecb" Style="{StaticResource ActivityControlButton}"
                         ToolTip="Add to My Day"

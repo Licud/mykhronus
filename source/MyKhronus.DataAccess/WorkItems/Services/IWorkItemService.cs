@@ -35,4 +35,11 @@ public interface IWorkItemService
     /// <param name="projectId">The ID of the project to link the work item to.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task LinkWorkItemToProject(Guid workItemId, int projectId);
+
+    /// <summary>
+    /// Unlink a work item to a project.
+    /// </summary>
+    /// <param name="workItemId">The ID of the work item to link.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task UnlinkWorkItemToProject(Guid workItemId);
 }

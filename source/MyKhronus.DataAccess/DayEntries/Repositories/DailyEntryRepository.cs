@@ -72,7 +72,7 @@ internal class DailyEntryRepository(
     {
         logger.LogTrace("Getting entries for date {entryDate}", entryDate);
 
-        var query = context.DayEntries.Where(e => e.EntryDate == entryDate);
+        var query = context.DayEntries.AsNoTracking().Where(e => e.EntryDate == entryDate);
 
         var result = await query
             .Select(e => new DayEntry(e.EntryDate, e.WorkItemId, e.Duration))
@@ -90,7 +90,7 @@ internal class DailyEntryRepository(
         var fromDate = from.Date;
         var toDate = to.Date;
 
-        var query = context.DayEntries.Where(e => e.EntryDate >= fromDate && e.EntryDate <= toDate);
+        var query = context.DayEntries.AsNoTracking().Where(e => e.EntryDate >= fromDate && e.EntryDate <= toDate);
 
         var result = await query
             .Select(e => new DayEntry(e.EntryDate, e.WorkItemId, e.Duration))
