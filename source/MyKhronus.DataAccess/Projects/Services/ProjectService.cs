@@ -16,7 +16,7 @@ internal class ProjectService(IUnitOfWork unitOfWork) : IProjectService
 
         await unitOfWork.Commit();
 
-        return added;
+        return new Project(added.Id, added.Name);
     }
 
     public async Task Delete(int projectId)

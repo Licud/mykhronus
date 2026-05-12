@@ -120,7 +120,7 @@ public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedM
 
         var saved = await projectService.Add(project);
 
-        SelectedProject = saved;
+        SelectProject(saved);
 
         WeakReferenceMessenger.Default.Send(new ProjectAddedMessage(saved));
     }

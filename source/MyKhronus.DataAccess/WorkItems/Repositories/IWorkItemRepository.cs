@@ -8,11 +8,13 @@ using MyKhronus.DataAccess.WorkItems.Models;
 
 internal interface IWorkItemRepository
 {
-    Task<WorkItem> Add(NewWorkItem workItem);
+    Task<Entities.WorkItem> Add(NewWorkItem workItem);
 
     Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter);
 
     Task Delete(Guid workItemId);
 
     Task LinkWorkItemToProject(Guid workItemId, int projectId);
+
+    Task UnlinkWorkItemToProject(Guid workItemId);
 }

@@ -13,7 +13,7 @@ using MyKhronus.DataAccess.WorkItems.Models;
 
 internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusContext context) : IWorkItemRepository
 {
-    public Task<WorkItem> Add(NewWorkItem workItem)
+    public Task<Entities.WorkItem> Add(NewWorkItem workItem)
     {
         logger.LogTrace("Adding work item with description: {Description}", workItem.Description);
 
@@ -24,11 +24,9 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             LastUsed = DateTime.UtcNow,
         });
 
-        var model = new WorkItem(added.Entity.Id, workItem.Description, added.Entity.LastUsed);
-        
-        logger.LogInformation("Work item added with ID: {Id}", model.Id);
+        logger.LogInformation("Work item with description: {Description} added", added.Entity.Description);
 
-        return Task.FromResult(model);
+        return Task.FromResult(added.Entity);
     }
 
     public async Task Delete(Guid workItemId)
@@ -75,7 +73,7 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             {
                 project = new Project(item.Project.Id, item.Project.Name);
             }
-        
+
             models.Add(new WorkItem(item.Id, item.Description, item.LastUsed, project));
         }
 
@@ -95,5 +93,20 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         context.Update(item);
 
         logger.LogInformation("Work item with ID: {WorkItemId} linked to project with ID: {ProjectId}", workItemId, projectId);
+    }
+
+    public async Task UnlinkWorkItemToProject(Guid workItemId)
+    {
+        logger.LogTrace("Unlinking work item with ID: {WorkItemId} from its project", workItemId);
+
+        var item = await context.WorkItems.FindAsync(workItemId);
+
+        if (item != null)
+        {
+            item.ProjectId = null;
+            context.Update(item);
+        }
+
+        logger.LogInformation("Work item with ID: {WorkItemId} unlinked from its project", workItemId);
     }
 }

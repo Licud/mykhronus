@@ -194,9 +194,16 @@ public class DayEntryViewModel : NotifyPropertyChanged, IDisposable
 
     private void ProjectPicker_ProjectChanged(object sender, EventArgs e)
     {
-        var prokectPicker = sender as ProjectPickerViewModel;
+        var projectPicker = sender as ProjectPickerViewModel;
 
-        workItemService.LinkWorkItemToProject(workItem.Id, prokectPicker.SelectedProject.Id);
+        if (projectPicker == null || projectPicker.SelectedProject == null)
+        {
+            workItemService.UnlinkWorkItemToProject(workItem.Id);
+        }
+        else
+        {
+            workItemService.LinkWorkItemToProject(workItem.Id, projectPicker.SelectedProject.Id);
+        }
     }
 
     public void Dispose()
