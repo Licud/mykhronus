@@ -24,6 +24,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
     private readonly IProjectService projectService;
     private readonly ProjectPickerViewModelFactory projectPickerViewModelFactory;
     private readonly DayEntryViewModelFactory dayEntryViewModelFactory;
+    private readonly RecentWorkItemViewModelFactory recentWorkItemViewModelFactory;
 
     private readonly ObservableCollection<RecentWorkItemViewModel> recentWorkItems = [];
     private readonly ObservableCollection<DayEntryViewModel> myDayEntries = [];
@@ -41,13 +42,16 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         IDailyEntryService dailyEntryService,
         IProjectService projectService,
         ProjectPickerViewModelFactory projectPickerViewModelFactory,
-        DayEntryViewModelFactory dayEntryViewModelFactory)
+        DayEntryViewModelFactory dayEntryViewModelFactory,
+        RecentWorkItemViewModelFactory recentWorkItemViewModelFactory)
     {
         this.workItemService = workItemService;
         this.dailyEntryService = dailyEntryService;
         this.projectService = projectService;
         this.projectPickerViewModelFactory = projectPickerViewModelFactory;
         this.dayEntryViewModelFactory = dayEntryViewModelFactory;
+        this.recentWorkItemViewModelFactory = recentWorkItemViewModelFactory;
+        
         RecentWorkItems = CollectionViewSource.GetDefaultView(recentWorkItems);
         RecentWorkItems.Filter = new Predicate<object>(WorkItemNameContains);
 
@@ -253,6 +257,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             if (projectPicker.HasSelectedProject)
             {
                 await workItemService.LinkWorkItemToProject(savedWorkItem.Id, projectPicker.SelectedProject.Id);
+
+                savedWorkItem = savedWorkItem with { Project = projectPicker.SelectedProject };
             }
         }
 
@@ -261,7 +267,9 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         if (!inRecentWorkItems && !inMyDayEntries)
         {
-            AddRecentWorkItem(new RecentWorkItemViewModel(savedWorkItem, workItemService, IsToday()));
+            var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(savedWorkItem, IsToday());
+
+            AddRecentWorkItem(recent);
         }
         else
         {
@@ -287,6 +295,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         viewModel.Deleted -= RecentWorkItem_Deleted;
         viewModel.AddedToMyDay -= RecentWorkItem_AddedToMyDay;
         viewModel.StartedAndAddedToMyDay -= RecentWorkItem_StartedAndAddedToMyDay;
+        viewModel.Dispose();
 
         recentWorkItems.Remove(viewModel);
     }
@@ -400,7 +409,9 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         foreach (var item in selectableWorkItems)
         {
-            AddRecentWorkItem(new RecentWorkItemViewModel(item, workItemService, IsToday()));
+            var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(item, IsToday());
+
+            AddRecentWorkItem(recent);
         }
 
         var loadedWorkItems = workItems.ToDictionary(w => w.Id, w => w);
@@ -478,7 +489,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         _ = AddWorkItemToMyDay(viewModel.WorkItem, startTimer: IsToday());
     }
 
-    private void DayEntry_Deleted(object sender, EventArgs e)
+    private async void DayEntry_Deleted(object sender, EventArgs e)
     {
         var viewModel = sender as DayEntryViewModel;
 
@@ -489,7 +500,16 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             OnPropertyChanged(nameof(IsTimerRunning));
         }
 
-        AddRecentWorkItem(new RecentWorkItemViewModel(viewModel.WorkItem, workItemService, IsToday()));
+        try
+        {
+            var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(viewModel.WorkItem, IsToday());
+
+            AddRecentWorkItem(recent);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error");
+        }
 
         RemoveDayEntry(viewModel);
     }

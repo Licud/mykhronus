@@ -5,21 +5,49 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:MyKhronus.WPF.UserControls.Views"
              mc:Ignorable="d"
-             d:DesignHeight="70" d:DesignWidth="800">
-    <Border Background="#2e2e2e" BorderThickness="1" CornerRadius="2">
+             d:DesignHeight="44" d:DesignWidth="800">
 
-        <Grid Margin="5 10 5 10">
+    <Border CornerRadius="3"
+            BorderThickness="1"
+            Padding="8 4"
+            Margin="0 2">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="#2a2a2a" />
+                <Setter Property="BorderBrush" Value="#2a2a2a" />
+
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#333335" />
+                        <Setter Property="BorderBrush" Value="#9c78bf" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBox Margin="5" IsReadOnly="True"
+            <TextBox Grid.Column="0"
+                     IsReadOnly="True"
                      Style="{StaticResource NormalTextBox}"
-                     Height="30"
+                     VerticalContentAlignment="Center"
+                     Height="28"
+                     Margin="0 0 8 0"
                      Text="{Binding Path=Name, Mode=OneTime}" />
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <local:ProjectPickerUserControl Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Margin="0 0 8 0"
+                                            DataContext="{Binding Path=ProjectPicker}" />
+
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
 
                 <Button Background="#1ddecb" Style="{StaticResource ActivityControlButton}"
                         ToolTip="Add to My Day"
