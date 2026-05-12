@@ -8,11 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using MyKhronus.DataAccess.Context;
+using MyKhronus.DataAccess.Projects.Models;
 using MyKhronus.DataAccess.WorkItems.Models;
 
 internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusContext context) : IWorkItemRepository
 {
-    public Task<WorkItem> Add(NewWorkItem workItem)
+    public Task<Entities.WorkItem> Add(NewWorkItem workItem)
     {
         logger.LogTrace("Adding work item with description: {Description}", workItem.Description);
 
@@ -23,11 +24,9 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             LastUsed = DateTime.UtcNow,
         });
 
-        var model = new WorkItem(added.Entity.Id, workItem.Description, added.Entity.LastUsed);
-        
-        logger.LogInformation("Work item added with ID: {Id}", model.Id);
+        logger.LogInformation("Work item with description: {Description} added", added.Entity.Description);
 
-        return Task.FromResult(model);
+        return Task.FromResult(added.Entity);
     }
 
     public async Task Delete(Guid workItemId)
@@ -48,7 +47,10 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
     {
         logger.LogTrace("Getting work items with filter: {@Filter}", filter);
 
-        var query = context.WorkItems.AsQueryable();
+        var query = context.WorkItems
+            .AsNoTracking()
+            .Include(w => w.Project)
+            .AsQueryable();
 
         if (filter.WorkItemId.HasValue)
         {
@@ -60,9 +62,21 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             query = query.Where(w => w.Description == filter.Description);
         }
 
-        var models = await query
-            .Select(w => new WorkItem(w.Id, w.Description, w.LastUsed))
-            .ToListAsync();
+        var results = await query.ToListAsync();
+
+        var models = new List<WorkItem>();
+
+        foreach (var item in results)
+        {
+            Project project = null;
+
+            if (item.Project != null)
+            {
+                project = new Project(item.Project.Id, item.Project.Name);
+            }
+
+            models.Add(new WorkItem(item.Id, item.Description, item.LastUsed, project));
+        }
 
         logger.LogDebug("Retrieved {Count} work items with filter: {@Filter}", models.Count, filter);
 
@@ -76,9 +90,26 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         var item = await context.WorkItems.FindAsync(workItemId);
 
         item.ProjectId = projectId;
+        item.Project = await context.Projects.FindAsync(projectId);
 
         context.Update(item);
 
         logger.LogInformation("Work item with ID: {WorkItemId} linked to project with ID: {ProjectId}", workItemId, projectId);
+    }
+
+    public async Task UnlinkWorkItemToProject(Guid workItemId)
+    {
+        logger.LogTrace("Unlinking work item with ID: {WorkItemId} from its project", workItemId);
+
+        var item = await context.WorkItems.FindAsync(workItemId);
+
+        if (item != null)
+        {
+            item.ProjectId = null;
+            item.Project = null;
+            context.Update(item);
+        }
+
+        logger.LogInformation("Work item with ID: {WorkItemId} unlinked from its project", workItemId);
     }
 }

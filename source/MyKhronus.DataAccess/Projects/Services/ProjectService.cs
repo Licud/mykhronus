@@ -16,7 +16,7 @@ internal class ProjectService(IUnitOfWork unitOfWork) : IProjectService
 
         await unitOfWork.Commit();
 
-        return added;
+        return new Project(added.Id, added.Name);
     }
 
     public async Task Delete(int projectId)
@@ -33,5 +33,10 @@ internal class ProjectService(IUnitOfWork unitOfWork) : IProjectService
         var repository = unitOfWork.GetProjectRepository();
 
         return await repository.Get(filter);
+    }
+
+    public Task<IEnumerable<Project>> Get()
+    {
+        return Get(new ProjectGetFilter());
     }
 }

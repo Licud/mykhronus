@@ -1,32 +1,46 @@
 namespace MyKhronus.WPF.UserControls.ViewModels;
 
+using System.Windows;
 using System.Windows.Input;
 
 using MyKhronus.DataAccess.DayEntries.Models;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
+using MyKhronus.DataAccess.WorkItems.Services;
 using MyKhronus.WPF.Enums;
 using MyKhronus.WPF.UserControls.EventArguments;
 using MyKhronus.WPF.Utilities;
 
-public class DayEntryViewModel : NotifyPropertyChanged
+public class DayEntryViewModel : NotifyPropertyChanged, IDisposable
 {
     public event EventHandler Deleted;
     public event EventHandler<DayEntryDurationChangedArgs> DurationChanged;
     public event EventHandler<TimerStateChangedArgs> TimerStateChanged;
 
     private readonly IDailyEntryService dailyEntryService;
+    private readonly IWorkItemService workItemService;
 
     private DayEntry dayEntry;
     private WorkItem workItem;
 
-    public DayEntryViewModel(DayEntry dayEntry, WorkItem workItem, IDailyEntryService dailyEntryService)
+    public DayEntryViewModel(
+        DayEntry dayEntry, 
+        WorkItem workItem, 
+        IDailyEntryService dailyEntryService,
+        IWorkItemService workItemService,
+        ProjectPickerViewModel projectPicker)
     {
         this.dayEntry = dayEntry;
         this.workItem = workItem;
         this.dailyEntryService = dailyEntryService;
+        this.workItemService = workItemService;
         Name = workItem.Description;
+        
         duration = dayEntry.Duration;
+        ProjectPicker = projectPicker;
+
+        ProjectPicker.SelectedProject = workItem.Project;
+        ProjectPicker.ProjectChanged += ProjectPicker_ProjectChanged;
     }
 
     public Guid WorkItemId => dayEntry.WorkItemId;
@@ -60,6 +74,18 @@ public class DayEntryViewModel : NotifyPropertyChanged
         set
         {
             isTimerRunning = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private ProjectPickerViewModel projectPicker;
+
+    public ProjectPickerViewModel ProjectPicker
+    {
+        get { return projectPicker; }
+        private set 
+        { 
+            projectPicker = value;
             OnPropertyChanged();
         }
     }
@@ -166,4 +192,30 @@ public class DayEntryViewModel : NotifyPropertyChanged
 
         Deleted?.Invoke(this, EventArgs.Empty);
     });
+
+    private async void ProjectPicker_ProjectChanged(object sender, EventArgs e)
+    {
+        var projectPicker = sender as ProjectPickerViewModel;
+
+        try
+        {
+            if (projectPicker?.SelectedProject == null)
+            {
+                await workItemService.UnlinkWorkItemToProject(workItem.Id);
+            }
+            else
+            {
+                await workItemService.LinkWorkItemToProject(workItem.Id, projectPicker.SelectedProject.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error");
+        }
+    }
+
+    public void Dispose()
+    {
+        projectPicker.ProjectChanged -= ProjectPicker_ProjectChanged;
+    }
 }

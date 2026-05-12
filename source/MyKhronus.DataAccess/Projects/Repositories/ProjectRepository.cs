@@ -11,7 +11,7 @@ using MyKhronus.DataAccess.Projects.Models;
 
 internal class ProjectRepository(ILogger<ProjectRepository> logger, MyKhronusContext context) : IProjectRepository
 {
-    public Task<Project> Add(NewProject project)
+    public Task<Entities.Project> Add(NewProject project)
     {
         logger.LogTrace("Adding project with name: {Name}", project.Name);
 
@@ -20,11 +20,9 @@ internal class ProjectRepository(ILogger<ProjectRepository> logger, MyKhronusCon
             Name = project.Name,
         });
 
-        var model = new Project(added.Entity.Id, project.Name);
+        logger.LogInformation("Project added with ID: {Name}", project.Name);
 
-        logger.LogInformation("Project added with ID: {Id}", model.Id);
-
-        return Task.FromResult(model);
+        return Task.FromResult(added.Entity);
     }
 
     public async Task Delete(int projectId)
@@ -45,7 +43,7 @@ internal class ProjectRepository(ILogger<ProjectRepository> logger, MyKhronusCon
     {
         logger.LogTrace("Getting projects with filter: {@Filter}", filter);
 
-        var query = context.Projects.AsQueryable();
+        var query = context.Projects.AsNoTracking().AsQueryable();
 
         if (filter.Id.HasValue)
         {

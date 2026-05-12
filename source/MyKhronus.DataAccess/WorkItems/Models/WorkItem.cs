@@ -2,4 +2,6 @@
 
 using System;
 
-public record WorkItem(Guid Id, string Description, DateTime LastUsed);
+using MyKhronus.DataAccess.Projects.Models;
+
+public record WorkItem(Guid Id, string Description, DateTime LastUsed, Project Project = null);

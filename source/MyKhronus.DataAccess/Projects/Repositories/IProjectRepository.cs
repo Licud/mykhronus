@@ -7,7 +7,7 @@ using MyKhronus.DataAccess.Projects.Models;
 
 internal interface IProjectRepository
 {
-    Task<Project> Add(NewProject project);
+    Task<Entities.Project> Add(NewProject project);
 
     Task<IEnumerable<Project>> Get(ProjectGetFilter filter);
 

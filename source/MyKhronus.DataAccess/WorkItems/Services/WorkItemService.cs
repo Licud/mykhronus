@@ -29,7 +29,7 @@ internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
 
         await unitOfWork.Commit();
 
-        return added;
+        return new WorkItem(added.Id, added.Description, added.LastUsed);
     }
 
     public async Task Delete(Guid workItemId)
@@ -57,6 +57,15 @@ internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
         var repository = unitOfWork.GetWorkItemRepository();
 
         await repository.LinkWorkItemToProject(workItemId, projectId);
+
+        await unitOfWork.Commit();
+    }
+
+    public async Task UnlinkWorkItemToProject(Guid workItemId)
+    {
+        var repository = unitOfWork.GetWorkItemRepository();
+
+        await repository.UnlinkWorkItemToProject(workItemId);
 
         await unitOfWork.Commit();
     }

@@ -205,18 +205,29 @@
                         </TextBox.InputBindings>
                     </TextBox>
 
-                    <StackPanel Grid.Row="2"
-                                Margin="0 10" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Background="#bb85fc"
+                    <Grid Grid.ColumnSpan="3" 
+                          Grid.Row="2"
+                          Margin="0 10" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <views:ProjectPickerUserControl DataContext="{Binding Path=ProjectPicker}" />
+                        
+                        <Button Grid.Column="1"
+                                Background="#bb85fc"
                                 Margin="5 0" Width="100"
                                 Content="Add"
                                 Command="{Binding Path=AddNewEntry}" />
 
-                        <Button Background="#bb85fc"
+                        <Button Grid.Column="2"
+                                Background="#bb85fc"
                                 Margin="5 0" Width="100"
                                 Content="Add and Start"
                                 Command="{Binding Path=AddAndStartNewEntry}" />
-                    </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
