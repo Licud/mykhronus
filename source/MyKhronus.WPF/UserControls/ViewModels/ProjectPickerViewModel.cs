@@ -58,6 +58,8 @@ public class ProjectPickerViewModel : ObservableObject, IRecipient<ProjectAddedM
 
     public bool ShowPlaceholder => string.IsNullOrEmpty(filterText);
 
+    public bool HasSelectedProject => SelectedProject != null;
+
     public string FilterText
     {
         get => filterText;

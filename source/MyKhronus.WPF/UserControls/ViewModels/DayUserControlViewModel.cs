@@ -242,6 +242,11 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             var newWorkItem = new NewWorkItem(newName);
 
             savedWorkItem = await workItemService.Add(newWorkItem);
+
+            if (projectPicker.HasSelectedProject)
+            {
+                await workItemService.LinkWorkItemToProject(savedWorkItem.Id, projectPicker.SelectedProject.Id);
+            }
         }
 
         var inRecentWorkItems = recentWorkItems.Any(r => r.WorkItemId == savedWorkItem.Id);
