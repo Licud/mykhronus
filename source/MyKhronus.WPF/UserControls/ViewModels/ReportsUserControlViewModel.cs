@@ -63,43 +63,43 @@ public class ReportsUserControlViewModel : MainViewModelControls
 
         var entries = await dailyEntryService.GetEntriesBetween(From, To);
 
-        var workItems = await workItemService.Get(new WorkItemGetFilter());
+        var workItems = await workItemService.Get(new WorkItemGetFilter()
+        {
+            WorkItemIds = entries.Select(e => e.WorkItemId).ToList(),
+        });
 
-        var workItemsById = workItems.ToDictionary(w => w.Id);
+        var groupedByProject = workItems
+            .Where(w => w.Project != null)
+            .GroupBy(w => w.Project);
 
         var dateSequence = BuildDateSequence(From.Date, To.Date);
 
-        var entriesByWorkItem = entries
-            .GroupBy(e => e.WorkItemId)
-            .Where(g => workItemsById.ContainsKey(g.Key))
-            .ToList();
-
-        var reportsByDate = new Dictionary<DateTime, List<WorkItemReportViewModel>>();
-
-        foreach (var group in entriesByWorkItem)
+        foreach (var projectGroup in groupedByProject)
         {
-            var workItem = workItemsById[group.Key];
+            var project = projectGroup.Key;
 
-            var groupedEntries = group.ToList();
+            var workItemsInProject = projectGroup.ToList();
 
-            var firstEntry = groupedEntries.OrderBy(e => e.EntryDate).First();
+            var workItemIds = workItemsInProject.Select(w => w.Id).ToHashSet();
 
-            var viewModel = new WorkItemReportViewModel(workItem, groupedEntries, dateSequence);
+            var workItemEntries = entries.Where(e => workItemIds.Contains(e.WorkItemId));
 
-            if (!reportsByDate.ContainsKey(firstEntry.EntryDate.Date))
-            {
-                reportsByDate.Add(firstEntry.EntryDate.Date, new List<WorkItemReportViewModel>());
-            }
+            var viewModel = new WorkItemReportViewModel(workItemsInProject, workItemEntries, dateSequence, project);
 
-            reportsByDate[firstEntry.EntryDate.Date].Add(viewModel);
+            WorkItemReports.Add(viewModel);
         }
 
-        foreach (var key in reportsByDate.Keys.OrderBy(k => k))
+        var workItemsWithoutProject = workItems
+            .Where(w => w.Project == null)
+            .ToList();
+
+        foreach (var item in workItemsWithoutProject)
         {
-            foreach (var viewModel in reportsByDate[key])
-            {
-                WorkItemReports.Add(viewModel);
-            }
+            var workItemEntries = entries.Where(e => e.WorkItemId == item.Id);
+
+            var viewModel = new WorkItemReportViewModel([item], workItemEntries, dateSequence, null);
+
+            WorkItemReports.Add(viewModel);
         }
     }
 

@@ -2,29 +2,35 @@ namespace MyKhronus.WPF.ViewModels;
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
 using MyKhronus.DataAccess.DayEntries.Models;
+using MyKhronus.DataAccess.Projects.Models;
 using MyKhronus.DataAccess.WorkItems.Models;
 using MyKhronus.WPF.Utilities;
 
 public class WorkItemReportViewModel : NotifyPropertyChanged
 {
-    private readonly WorkItem workItem;
+    private readonly IEnumerable<WorkItem> workItems;
     private readonly IReadOnlyList<DateTime> dateSequence;
-    private readonly IReadOnlyDictionary<DateTime, DayEntry> entriesByDate;
+    private readonly Project project;
+    private readonly IReadOnlyDictionary<DateTime, IEnumerable<DayEntry>> entriesByDate;
 
     public WorkItemReportViewModel(
-        WorkItem workItem,
+        IEnumerable<WorkItem> workItems,
         IEnumerable<DayEntry> entries,
-        IReadOnlyList<DateTime> dateSequence)
+        IReadOnlyList<DateTime> dateSequence,
+        Project project = null)
     {
-        this.workItem = workItem;
+        this.workItems = workItems;
 
         this.dateSequence = dateSequence;
-
-        this.entriesByDate = entries.ToDictionary(e => e.EntryDate.Date);
+        this.project = project;
+        this.entriesByDate = entries
+            .GroupBy(g => g.EntryDate.Date)
+            .ToDictionary(g => g.Key, g => g.AsEnumerable());
 
         Records = new ObservableCollection<DayEntryReportViewModel>();
 
@@ -32,7 +38,7 @@ public class WorkItemReportViewModel : NotifyPropertyChanged
         SetRecords();
     }
 
-    public string Name => workItem.Description;
+    public string ProjectName => project?.Name ?? "No Project";
 
     private string description;
 
@@ -62,16 +68,32 @@ public class WorkItemReportViewModel : NotifyPropertyChanged
 
     private void SetDescription()
     {
-        Description = workItem.Description;
+        var stringBuilder = new StringBuilder();
+
+        foreach (var workItem in workItems)
+        {
+            stringBuilder.AppendLine(workItem.Description);
+        }
+
+        Description = stringBuilder.ToString();
     }
 
     private void SetRecords()
     {
         foreach (var date in dateSequence)
         {
-            if (entriesByDate.TryGetValue(date, out var entry))
+            if (entriesByDate.ContainsKey(date))
             {
-                Records.Add(new DayEntryReportViewModel(entry));
+                var entries = entriesByDate[date];
+
+                var timespan = TimeSpan.Zero;
+
+                foreach (var entry in entries)
+                {
+                    timespan += entry.Duration;
+                }
+
+                Records.Add(new DayEntryReportViewModel(date, timespan));
             }
             else
             {
