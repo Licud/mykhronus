@@ -18,7 +18,7 @@ public static class Registrations
         var builder = new RegistrationBuilder();
         configure(builder);
 
-        serviceCollection.AddDbContextFactory<MyKhronusContext>(options => options.UseSqlServer(builder.ConnectionString));
+        serviceCollection.AddDbContextFactory<MyKhronusContext>(options => options.UseSqlite(builder.ConnectionString));
 
         serviceCollection.AddTransient<IWorkItemService, WorkItemService>();
         serviceCollection.AddTransient<IProjectService, ProjectService>();
