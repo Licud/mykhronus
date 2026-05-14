@@ -11,13 +11,27 @@ internal class DailyEntryService(IUnitOfWork unitOfWork) : IDailyEntryService
 {
     public async Task<DayEntry> Add(DateTime entryDate, Guid workItemId)
     {
-        var repository = unitOfWork.GetDailyEntryRepository();
+        var dailyEntryRepository = unitOfWork.GetDailyEntryRepository();
 
-        var added = await repository.Add(entryDate, workItemId);
+        var added = await dailyEntryRepository.Add(entryDate, workItemId);
+
+        var workItemRepository = unitOfWork.GetWorkItemRepository();
+
+        var workItems = await workItemRepository.Get(new()
+        {
+            WorkItemId = workItemId,
+        });
+
+        var updatedWorkItem = workItems.Single() with
+        {
+            LastUsed = DateTime.UtcNow,
+        };
+
+        await workItemRepository.Update(updatedWorkItem);
 
         await unitOfWork.Commit();
 
-        return added;
+        return  new DayEntry(entryDate, workItemId, added.Duration); ;
     }
 
     public async Task Delete(DateTime entryDate, Guid workItemId)
