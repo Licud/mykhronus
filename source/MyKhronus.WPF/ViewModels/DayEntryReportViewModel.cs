@@ -8,11 +8,11 @@ using MyKhronus.WPF.Utilities;
 
 public class DayEntryReportViewModel
 {
-    public DayEntryReportViewModel(DayEntry dayEntry)
+    public DayEntryReportViewModel(DateTime entryDate, TimeSpan duration)
     {
-        RecordDate = dayEntry.EntryDate.ToString("ddd dd/MM");
+        RecordDate = entryDate.ToString("ddd dd/MM");
 
-        Duration = dayEntry.Duration.ToString(@"hh\:mm");
+        Duration = duration.ToString(@"hh\:mm");
 
         HasEntry = true;
     }

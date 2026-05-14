@@ -62,6 +62,11 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             query = query.Where(w => w.Description == filter.Description);
         }
 
+        if (filter.WorkItemIds.Any())
+        {
+            query = query.Where(w => filter.WorkItemIds.Contains(w.Id));
+        }
+
         var results = await query.ToListAsync();
 
         var models = new List<WorkItem>();
