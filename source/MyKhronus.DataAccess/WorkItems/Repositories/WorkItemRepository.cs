@@ -43,7 +43,7 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         logger.LogInformation("Work item with ID: {Id} deleted", workItemId);
     }
 
-    public async Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter, int limit = 50)
+    public async Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter, int limit = 100)
     {
         logger.LogTrace("Getting work items with filter: {@Filter}", filter);
 
@@ -88,6 +88,39 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         }
 
         logger.LogDebug("Retrieved {Count} work items with filter: {@Filter}", models.Count, filter);
+
+        return models;
+    }
+
+    public async Task<IEnumerable<WorkItem>> Search(string description, int limit = 50)
+    {
+        logger.LogTrace("Searching work items with description like: {Description}", description);
+
+        var pattern = $"%{description}%";
+
+        var results = await context.WorkItems
+            .AsNoTracking()
+            .Include(w => w.Project)
+            .Where(w => EF.Functions.Like(w.Description, pattern))
+            .OrderByDescending(q => q.LastUsed)
+            .Take(limit)
+            .ToListAsync();
+
+        var models = new List<WorkItem>();
+
+        foreach (var item in results)
+        {
+            Project project = null;
+
+            if (item.Project != null)
+            {
+                project = new Project(item.Project.Id, item.Project.Name);
+            }
+
+            models.Add(new WorkItem(item.Id, item.Description, item.LastUsed, project));
+        }
+
+        logger.LogDebug("Search for description like: {Description} returned {Count} work items", description, models.Count);
 
         return models;
     }

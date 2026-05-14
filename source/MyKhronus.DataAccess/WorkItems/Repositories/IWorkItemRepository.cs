@@ -10,7 +10,9 @@ internal interface IWorkItemRepository
 {
     Task<Entities.WorkItem> Add(NewWorkItem workItem);
 
-    Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter, int limit = 50);
+    Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter, int limit = 100);
+
+    Task<IEnumerable<WorkItem>> Search(string description, int limit = 50);
 
     Task Delete(Guid workItemId);
 

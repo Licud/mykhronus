@@ -21,6 +21,13 @@ public interface IWorkItemService
     /// <returns>A collection of work items that match the filter.</returns>
     Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter);
 
+    /// <summary>
+    /// Searches for work items whose description contains the given text.
+    /// </summary>
+    /// <param name="description">Substring to search for in work item descriptions.</param>
+    /// <returns>A collection of matching work items.</returns>
+    Task<IEnumerable<WorkItem>> Search(string description);
+
 
     /// <summary>
     /// Deletes a work item.
