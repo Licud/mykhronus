@@ -7,6 +7,7 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<AssemblyName>MyKhronus</AssemblyName>
 	<ApplicationIcon>images\stopwatch_icon.ico</ApplicationIcon>
+	<Version>1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

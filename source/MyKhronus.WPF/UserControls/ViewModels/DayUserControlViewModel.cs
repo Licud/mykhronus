@@ -31,7 +31,11 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     private DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private DispatcherTimer autoSaveTimer = new() { Interval = TimeSpan.FromMinutes(3) };
+    private DispatcherTimer filterSearchDebounce = new() { Interval = TimeSpan.FromMilliseconds(250) };
+
     private DayEntryViewModel currentlyRunningTimerEntry;
+
+    private const int MinFilterSearchLength = 2;
 
     private DateTime? lastSaveTime;
 
@@ -66,6 +70,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         autoSaveTimer.Tick += async (_, _) => await ExecuteSave();
         autoSaveTimer.Start();
+
+        filterSearchDebounce.Tick += async (_, _) => await ExecuteFilterSearch();
     }
 
     // Properties
@@ -86,6 +92,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             workItemFilter = value;
             RecentWorkItems.Refresh();
             MyDay.Refresh();
+            ScheduleFilterSearch();
             OnPropertyChanged();
         }
     }
@@ -312,6 +319,69 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         var dayEntryViewModel = viewModel as DayEntryViewModel;
 
         return dayEntryViewModel?.Name.Contains(WorkItemFilter, StringComparison.InvariantCultureIgnoreCase) == true;
+    }
+
+    private void ScheduleFilterSearch()
+    {
+        filterSearchDebounce.Stop();
+
+        if (string.IsNullOrWhiteSpace(workItemFilter) || workItemFilter.Length < MinFilterSearchLength)
+        {
+            return;
+        }
+
+        filterSearchDebounce.Start();
+    }
+
+    private async Task ExecuteFilterSearch()
+    {
+        filterSearchDebounce.Stop();
+
+        var term = workItemFilter;
+
+        if (string.IsNullOrWhiteSpace(term) || term.Length < MinFilterSearchLength)
+        {
+            return;
+        }
+
+        try
+        {
+            var matches = await workItemService.Search(term);
+
+            if (!string.Equals(term, workItemFilter, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var added = false;
+
+            foreach (var workItem in matches)
+            {
+                if (recentWorkItems.Any(r => r.WorkItemId == workItem.Id))
+                {
+                    continue;
+                }
+
+                if (myDayEntries.Any(e => e.WorkItemId == workItem.Id))
+                {
+                    continue;
+                }
+
+                var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(workItem, IsToday());
+
+                AddRecentWorkItem(recent);
+                added = true;
+            }
+
+            if (added)
+            {
+                RecentWorkItems.Refresh();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Error");
+        }
     }
 
     // Day Entry Methods
@@ -582,5 +652,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         timer.Tick -= Timer_Tick;
 
         autoSaveTimer.Stop();
+
+        filterSearchDebounce.Stop();
     }
 }

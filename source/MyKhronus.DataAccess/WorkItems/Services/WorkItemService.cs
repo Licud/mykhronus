@@ -52,6 +52,13 @@ internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
         return await repository.Get(filter);
     }
 
+    public async Task<IEnumerable<WorkItem>> Search(string description)
+    {
+        var repository = unitOfWork.GetWorkItemRepository();
+
+        return await repository.Search(description);
+    }
+
     public async Task LinkWorkItemToProject(Guid workItemId, int projectId)
     {
         var repository = unitOfWork.GetWorkItemRepository();

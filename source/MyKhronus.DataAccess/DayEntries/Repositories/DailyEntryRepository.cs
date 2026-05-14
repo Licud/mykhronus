@@ -15,7 +15,7 @@ internal class DailyEntryRepository(
     ILogger<DailyEntryRepository> logger,
     MyKhronusContext context) : IDailyEntryRepository
 {
-    public async Task<DayEntry> Add(DateTime entryDate, Guid workItemId)
+    public async Task<Entities.DayEntry> Add(DateTime entryDate, Guid workItemId)
     {
         logger.LogTrace("Adding entry for date {entryDate} and work item {workItemId}", entryDate, workItemId);
 
@@ -23,7 +23,7 @@ internal class DailyEntryRepository(
 
         if (saved == null)
         {
-            saved = context.DayEntries.Add(new()
+            saved = context.DayEntries.Add(new Entities.DayEntry()
             {
                 EntryDate = entryDate,
                 WorkItemId = workItemId,
@@ -31,11 +31,9 @@ internal class DailyEntryRepository(
             }).Entity;
         }
 
-        var result = new DayEntry(entryDate, workItemId, saved.Duration);
-
         logger.LogInformation("Added entry for date {entryDate} and work item {workItemId}", entryDate, workItemId);
 
-        return result;
+        return saved;
     }
 
     public async Task Delete(DateTime entryDate, Guid workItemId)
