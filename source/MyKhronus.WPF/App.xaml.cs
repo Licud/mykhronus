@@ -42,14 +42,13 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        var databaseLocation = Path.Combine(Environment.CurrentDirectory, "Data", "MyKhronusData.mdf");
+        var dataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
 
-        if (!File.Exists(databaseLocation))
-        {
-            throw new ApplicationException($"The database path {databaseLocation} could not be found.");
-        }
+        Directory.CreateDirectory(dataDirectory);
 
-        var connectionString = $"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename={databaseLocation};Integrated Security=True";
+        var databaseLocation = Path.Combine(dataDirectory, "MyKhronus.db");
+
+        var connectionString = $"Data Source={databaseLocation}";
 
         services.UsingMyKhronusDataAccess(configure =>
         {
