@@ -43,7 +43,7 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         logger.LogInformation("Work item with ID: {Id} deleted", workItemId);
     }
 
-    public async Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter)
+    public async Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter, int limit = 50)
     {
         logger.LogTrace("Getting work items with filter: {@Filter}", filter);
 
@@ -66,6 +66,10 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         {
             query = query.Where(w => filter.WorkItemIds.Contains(w.Id));
         }
+
+        query = query
+            .OrderByDescending(q => q.LastUsed)
+            .Take(limit);
 
         var results = await query.ToListAsync();
 
@@ -116,5 +120,21 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
         }
 
         logger.LogInformation("Work item with ID: {WorkItemId} unlinked from its project", workItemId);
+    }
+
+    public async Task Update(WorkItem workItem)
+    {
+        logger.LogTrace("Updating work item with ID: {Id}", workItem.Id);
+
+        var item = await context.WorkItems.FindAsync(workItem.Id);
+
+        if (item != null)
+        {
+            item.LastUsed = workItem.LastUsed;
+            item.Description = workItem.Description;
+            context.Update(item);
+        }
+
+        logger.LogInformation("Work item with ID: {WorkItemId} updated", workItem.Id);
     }
 }
