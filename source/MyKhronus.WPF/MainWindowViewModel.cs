@@ -19,8 +19,14 @@ public class MainWindowViewModel(
         {
             selectedViewModel = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsDayViewActive));
+            OnPropertyChanged(nameof(IsReportsViewActive));
         }
     }
+
+    public bool IsDayViewActive => selectedViewModel == dayViewModel;
+
+    public bool IsReportsViewActive => selectedViewModel == reportsViewModel;
 
     public ICommand ShowReportsView
         => new RelayCommand(() => SelectedViewModel = reportsViewModel);

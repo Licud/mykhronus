@@ -15,12 +15,31 @@
 
             <!-- Clickable display area showing selected project or placeholder -->
             <Button Grid.ColumnSpan="2"
-                    Background="Transparent"
-                    BorderThickness="0"
                     HorizontalContentAlignment="Left"
                     Command="{Binding ToggleDropDown}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                          VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3a3a3a" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
                 <TextBlock Text="{Binding PlaceholderText}"
-                           Foreground="#757575"
+                           Foreground="#d8d8d8"
                            Margin="6 0 22 0"
                            VerticalAlignment="Center" />
             </Button>
