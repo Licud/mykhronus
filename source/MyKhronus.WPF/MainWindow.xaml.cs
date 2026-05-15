@@ -1,19 +1,12 @@
 ﻿namespace MyKhronus.WPF;
 
-using System;
-using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
+using System.Windows.Media;
 
 public partial class MainWindow : Window
 {
-    [DllImport("user32.DLL", EntryPoint="ReleaseCapture")]
-    private static extern void ReleaseCapture();
-
-    [DllImport("user32.DLL", EntryPoint = "SendMessage")]
-    private static extern void SendMessage(IntPtr one, int two, int three, int four);
-
     public MainWindow()
     {
         InitializeComponent();
@@ -21,13 +14,25 @@ public partial class MainWindow : Window
 
     private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        var windowHandle = new WindowInteropHelper(this).Handle;
+        if (e.ChangedButton != MouseButton.Left) return;
 
-        ReleaseCapture();
-        SendMessage(windowHandle, 0x112, 0xf012, 0);
+        var source = e.OriginalSource as DependencyObject;
+        while (source != null)
+        {
+            if (source is Button) return;
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        if (e.ClickCount == 2)
+        {
+            Maximize_Click(sender, e);
+            return;
+        }
+
+        DragMove();
     }
 
-    private void Minimize_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
+    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void Maximize_Click(object sender, RoutedEventArgs e)
         => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
