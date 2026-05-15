@@ -8,6 +8,8 @@
 	<AssemblyName>MyKhronus</AssemblyName>
 	<ApplicationIcon>images\stopwatch_icon.ico</ApplicationIcon>
 	<Version>1.2</Version>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
