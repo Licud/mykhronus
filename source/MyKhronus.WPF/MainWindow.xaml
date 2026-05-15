@@ -67,26 +67,62 @@
             </StackPanel>
         </Grid>
 
-        <StackPanel Grid.Row="1"
-                        Margin="10 10"
-                        Orientation="Horizontal" HorizontalAlignment="Left" >
-            <StackPanel.Resources>
-                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                    <Setter Property="Margin" Value="7 0" />
-                    <Setter Property="Width" Value="120" />
-                    <Setter Property="FontSize" Value="15" />
-                </Style>
-            </StackPanel.Resources>
+        <Border Grid.Row="1" Margin="10 8" HorizontalAlignment="Left"
+                Background="#221d2b" CornerRadius="8" Padding="4">
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding Path=ShowDayView}" Width="110" FontSize="14">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Foreground" Value="#bb85fc" />
+                            <Setter Property="FontSize" Value="14" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="5" Padding="20 5">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Background" Value="Transparent" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDayViewActive}" Value="True">
+                                    <Setter Property="Background" Value="#bb85fc" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    Day
+                </Button>
 
-            <Button Background="#bb85fc"
-                        Content="Day"
-                        Command="{Binding Path=ShowDayView}" />
-
-            <Button Background="#bb85fc"
-                        Content="Reports"
-                        Command="{Binding Path=ShowReportsView}" />
-
-        </StackPanel>
+                <Button Command="{Binding Path=ShowReportsView}" Width="110" FontSize="14">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Foreground" Value="#bb85fc" />
+                            <Setter Property="FontSize" Value="14" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="5" Padding="20 5">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Background" Value="Transparent" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsReportsViewActive}" Value="True">
+                                    <Setter Property="Background" Value="#bb85fc" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    Reports
+                </Button>
+            </StackPanel>
+        </Border>
 
         <ContentControl Grid.Row="2" Content="{Binding Path=SelectedViewModel, Mode=OneWay}" />
 
