@@ -178,13 +178,19 @@ public class DayEntryViewModel : NotifyPropertyChanged, IDisposable
 
     private bool CanExecuteStartTimer() => dayEntry.EntryDate.Date == DateTime.Today;
 
-    public ICommand StopTimer => new RelayCommand(() => 
+    public ICommand StopTimer => new RelayCommand(ExecuteStopTimer);
+
+    private void ExecuteStopTimer()
     {
         TimerStateChanged?.Invoke(this, new TimerStateChangedArgs
         {
             TimerStateChange = TimerStateChange.Stop
         });
-    });
+    }
+
+    public ICommand ToggleTimer => new RelayCommand(
+        () => { if (IsTimerRunning) ExecuteStopTimer(); else ExecuteStartTimer(); },
+        () => IsTimerRunning || CanExecuteStartTimer());
 
     public ICommand Delete => new RelayCommand(async () =>
     {
