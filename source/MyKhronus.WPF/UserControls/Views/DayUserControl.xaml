@@ -180,26 +180,73 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Label Style="{StaticResource Header}" Content="Work Items" />
+            <Border Background="#221d2b" CornerRadius="8" Padding="4" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding ShowRecents}" Width="90" FontSize="13">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#bb85fc" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="5" Padding="12 4">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRecentsViewActive}" Value="True">
+                                        <Setter Property="Background" Value="#bb85fc" />
+                                        <Setter Property="Foreground" Value="White" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        Recents
+                    </Button>
+                    <Button Command="{Binding ShowScheduled}" Width="90" FontSize="13">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#bb85fc" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="5" Padding="12 4">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsScheduledViewActive}" Value="True">
+                                        <Setter Property="Background" Value="#bb85fc" />
+                                        <Setter Property="Foreground" Value="White" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        Scheduled
+                    </Button>
+                </StackPanel>
+            </Border>
 
             <Border Grid.Row="1" Margin="0 0 0 15"
                     Background="#121212" CornerRadius="5">
                 <Grid Margin="5">
 
-                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Foreground="#acacac"
-                               Visibility="{Binding Path=HasRecentWorkItems, Mode=OneWay,
-                                    Converter={StaticResource InverseBoolToVisibility}}"
-                               Text="You currently have no recent work items." />
+                    <!-- Recents -->
+                    <Grid Visibility="{Binding IsRecentsViewActive, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="#acacac"
+                                   Visibility="{Binding Path=Recents.HasItems, Converter={StaticResource InverseBoolToVisibility}}"
+                                   Text="You currently have no recent work items." />
 
-                    <Grid Visibility="{Binding Path=HasRecentWorkItems, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Path=RecentWorkItems}">
+                        <ScrollViewer Visibility="{Binding Path=Recents.HasItems, Converter={StaticResource BoolToVisibility}}"
+                                      VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Path=Recents.Items}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <views:RecentWorkItemUserControl />
@@ -208,6 +255,13 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
+
+                    <!-- Scheduled -->
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="#acacac"
+                               Visibility="{Binding IsScheduledViewActive, Converter={StaticResource BoolToVisibility}}"
+                               Text="No scheduled tasks yet." />
+
                 </Grid>
             </Border>
 

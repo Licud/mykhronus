@@ -28,30 +28,30 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
     private readonly DayEntryViewModelFactory dayEntryViewModelFactory;
     private readonly RecentWorkItemViewModelFactory recentWorkItemViewModelFactory;
 
-    private readonly ObservableCollection<RecentWorkItemViewModel> recentWorkItems = [];
     private readonly ObservableCollection<DayEntryViewModel> myDayEntries = [];
 
     private DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private DispatcherTimer autoSaveTimer = new() { Interval = TimeSpan.FromMinutes(3) };
-    private DispatcherTimer filterSearchDebounce = new() { Interval = TimeSpan.FromMilliseconds(250) };
 
     private DayEntryViewModel currentlyRunningTimerEntry;
 
     private DateTime? sessionLockTime;
 
-    private const int MinFilterSearchLength = 2;
-
     private DateTime? lastSaveTime;
 
     private bool isAddingToMyDay;
 
+    private bool isRecentsViewActive = true;
+
     public DayUserControlViewModel(
-        IWorkItemService workItemService, 
+        IWorkItemService workItemService,
         IDailyEntryService dailyEntryService,
         IProjectService projectService,
         ProjectPickerViewModelFactory projectPickerViewModelFactory,
         DayEntryViewModelFactory dayEntryViewModelFactory,
-        RecentWorkItemViewModelFactory recentWorkItemViewModelFactory)
+        RecentWorkItemViewModelFactory recentWorkItemViewModelFactory,
+        RecentsViewModel recents,
+        ScheduledViewModel scheduled)
     {
         this.workItemService = workItemService;
         this.dailyEntryService = dailyEntryService;
@@ -59,14 +59,16 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         this.projectPickerViewModelFactory = projectPickerViewModelFactory;
         this.dayEntryViewModelFactory = dayEntryViewModelFactory;
         this.recentWorkItemViewModelFactory = recentWorkItemViewModelFactory;
-        
-        RecentWorkItems = CollectionViewSource.GetDefaultView(recentWorkItems);
-        RecentWorkItems.Filter = new Predicate<object>(WorkItemNameContains);
+
+        Recents = recents;
+        Scheduled = scheduled;
+
+        Recents.IsAlreadyInMyDay = id => myDayEntries.Any(e => e.WorkItemId == id);
+        Recents.AddToMyDayRequested += Recents_AddToMyDayRequested;
+        Recents.StartAndAddToMyDayRequested += Recents_StartAndAddToMyDayRequested;
 
         MyDay = CollectionViewSource.GetDefaultView(myDayEntries);
         MyDay.Filter = new Predicate<object>(DayEntryNameContains);
-
-        recentWorkItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRecentWorkItems));
 
         selectedDate = DateTime.Today;
 
@@ -76,17 +78,32 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         autoSaveTimer.Tick += async (_, _) => await ExecuteSave();
         autoSaveTimer.Start();
-
-        filterSearchDebounce.Tick += async (_, _) => await ExecuteFilterSearch();
     }
 
     // Properties
 
-    public ICollectionView RecentWorkItems { get; }
+    public RecentsViewModel Recents { get; }
+
+    public ScheduledViewModel Scheduled { get; }
 
     public ICollectionView MyDay { get; }
 
-    public bool HasRecentWorkItems => recentWorkItems.Count > 0;
+    public bool IsRecentsViewActive
+    {
+        get => isRecentsViewActive;
+        private set
+        {
+            isRecentsViewActive = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsScheduledViewActive));
+        }
+    }
+
+    public bool IsScheduledViewActive => !isRecentsViewActive;
+
+    public ICommand ShowRecents => new RelayCommand(() => IsRecentsViewActive = true);
+
+    public ICommand ShowScheduled => new RelayCommand(() => IsRecentsViewActive = false);
 
     private string workItemFilter = "";
 
@@ -96,9 +113,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         set
         {
             workItemFilter = value;
-            RecentWorkItems.Refresh();
+            Recents.SetFilter(value);
             MyDay.Refresh();
-            ScheduleFilterSearch();
             OnPropertyChanged();
         }
     }
@@ -275,14 +291,14 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
             }
         }
 
-        var inRecentWorkItems = recentWorkItems.Any(r => r.WorkItemId == savedWorkItem.Id);
+        var inRecents = Recents.Contains(savedWorkItem.Id);
         var inMyDayEntries = myDayEntries.Any(e => e.WorkItemId == savedWorkItem.Id);
 
-        if (!inRecentWorkItems && !inMyDayEntries)
+        if (!inRecents && !inMyDayEntries)
         {
             var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(savedWorkItem, IsToday());
 
-            AddRecentWorkItem(recent);
+            Recents.Add(recent);
         }
         else
         {
@@ -294,100 +310,11 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         return savedWorkItem;
     }
 
-    private void AddRecentWorkItem(RecentWorkItemViewModel viewModel)
-    {
-        viewModel.Deleted += RecentWorkItem_Deleted;
-        viewModel.AddedToMyDay += RecentWorkItem_AddedToMyDay;
-        viewModel.StartedAndAddedToMyDay += RecentWorkItem_StartedAndAddedToMyDay;
-
-        recentWorkItems.Add(viewModel);
-    }
-
-    private void RemoveRecentWorkItem(RecentWorkItemViewModel viewModel)
-    {
-        viewModel.Deleted -= RecentWorkItem_Deleted;
-        viewModel.AddedToMyDay -= RecentWorkItem_AddedToMyDay;
-        viewModel.StartedAndAddedToMyDay -= RecentWorkItem_StartedAndAddedToMyDay;
-        viewModel.Dispose();
-
-        recentWorkItems.Remove(viewModel);
-    }
-
-    private bool WorkItemNameContains(object viewModel)
-    {
-        var recentWorkItemViewModel = viewModel as RecentWorkItemViewModel;
-
-        return recentWorkItemViewModel?.Name.Contains(WorkItemFilter, StringComparison.InvariantCultureIgnoreCase) == true;
-    }
-
     private bool DayEntryNameContains(object viewModel)
     {
         var dayEntryViewModel = viewModel as DayEntryViewModel;
 
         return dayEntryViewModel?.Name.Contains(WorkItemFilter, StringComparison.InvariantCultureIgnoreCase) == true;
-    }
-
-    private void ScheduleFilterSearch()
-    {
-        filterSearchDebounce.Stop();
-
-        if (string.IsNullOrWhiteSpace(workItemFilter) || workItemFilter.Length < MinFilterSearchLength)
-        {
-            return;
-        }
-
-        filterSearchDebounce.Start();
-    }
-
-    private async Task ExecuteFilterSearch()
-    {
-        filterSearchDebounce.Stop();
-
-        var term = workItemFilter;
-
-        if (string.IsNullOrWhiteSpace(term) || term.Length < MinFilterSearchLength)
-        {
-            return;
-        }
-
-        try
-        {
-            var matches = await workItemService.Search(term);
-
-            if (!string.Equals(term, workItemFilter, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            var added = false;
-
-            foreach (var workItem in matches)
-            {
-                if (recentWorkItems.Any(r => r.WorkItemId == workItem.Id))
-                {
-                    continue;
-                }
-
-                if (myDayEntries.Any(e => e.WorkItemId == workItem.Id))
-                {
-                    continue;
-                }
-
-                var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(workItem, IsToday());
-
-                AddRecentWorkItem(recent);
-                added = true;
-            }
-
-            if (added)
-            {
-                RecentWorkItems.Refresh();
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.ToString(), "Error");
-        }
     }
 
     // Day Entry Methods
@@ -414,7 +341,13 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
                 currentDayEntry = await dayEntryViewModelFactory.CreateDayEntryViewModel(dayEntry, workItem);
 
                 AddDayEntry(currentDayEntry);
-                RemoveRecentWorkItem(recentWorkItems.FirstOrDefault(r => r.WorkItemId == workItem.Id));
+
+                var existing = Recents.FindById(workItem.Id);
+
+                if (existing != null)
+                {
+                    Recents.Remove(existing);
+                }
             }
 
             if (startTimer)
@@ -464,10 +397,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
     private async Task ReloadCollections()
     {
-        foreach (var item in recentWorkItems.ToList())
-        {
-            RemoveRecentWorkItem(item);
-        }
+        Recents.Clear();
 
         foreach (var entry in myDayEntries.ToList())
         {
@@ -475,6 +405,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         }
 
         TotalDuration = TimeSpan.Zero;
+
+        Recents.IsToday = IsToday();
 
         var workItems = Task.Run(() => workItemService.Get(new())).GetAwaiter().GetResult();
         var dayEntries = Task.Run(() => dailyEntryService.GetEntries(selectedDate)).GetAwaiter().GetResult();
@@ -487,7 +419,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         {
             var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(item, IsToday());
 
-            AddRecentWorkItem(recent);
+            Recents.Add(recent);
         }
 
         var loadedWorkItems = workItems.ToDictionary(w => w.Id, w => w);
@@ -544,25 +476,14 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         currentlyRunningTimerEntry?.AddDuration(TimeSpan.FromSeconds(1));
     }
 
-    private void RecentWorkItem_Deleted(object sender, EventArgs e)
+    private void Recents_AddToMyDayRequested(object sender, WorkItem workItem)
     {
-        var viewModel = sender as RecentWorkItemViewModel;
-
-        RemoveRecentWorkItem(viewModel);
+        _ = AddWorkItemToMyDay(workItem);
     }
 
-    private void RecentWorkItem_AddedToMyDay(object sender, EventArgs e)
+    private void Recents_StartAndAddToMyDayRequested(object sender, WorkItem workItem)
     {
-        var viewModel = sender as RecentWorkItemViewModel;
-
-        _ = AddWorkItemToMyDay(viewModel.WorkItem);
-    }
-
-    private void RecentWorkItem_StartedAndAddedToMyDay(object sender, EventArgs e)
-    {
-        var viewModel = sender as RecentWorkItemViewModel;
-
-        _ = AddWorkItemToMyDay(viewModel.WorkItem, startTimer: IsToday());
+        _ = AddWorkItemToMyDay(workItem, startTimer: IsToday());
     }
 
     private async void DayEntry_Deleted(object sender, EventArgs e)
@@ -580,7 +501,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         {
             var recent = await recentWorkItemViewModelFactory.CreateRecentWorkItemViewModel(viewModel.WorkItem, IsToday());
 
-            AddRecentWorkItem(recent);
+            Recents.Add(recent);
         }
         catch (Exception ex)
         {
@@ -708,7 +629,9 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
 
         autoSaveTimer.Stop();
 
-        filterSearchDebounce.Stop();
+        Recents.AddToMyDayRequested -= Recents_AddToMyDayRequested;
+        Recents.StartAndAddToMyDayRequested -= Recents_StartAndAddToMyDayRequested;
+        Recents.Dispose();
 
         SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
     }

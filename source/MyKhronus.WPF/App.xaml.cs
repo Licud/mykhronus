@@ -59,6 +59,8 @@ public partial class App : Application
         services.AddTransient<DayEntryViewModelFactory>();
         services.AddTransient<RecentWorkItemViewModelFactory>();
 
+        services.AddScoped<RecentsViewModel>();
+        services.AddScoped<ScheduledViewModel>();
         services.AddScoped<ReportsUserControlViewModel>();
         services.AddScoped<DayUserControlViewModel>();
         services.AddTransient<MainWindowViewModel>();
