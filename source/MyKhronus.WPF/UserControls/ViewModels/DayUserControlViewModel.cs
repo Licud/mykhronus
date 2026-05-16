@@ -8,6 +8,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 
+using Microsoft.Win32;
+
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.Projects.Services;
 using MyKhronus.DataAccess.WorkItems.Models;
@@ -34,6 +36,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
     private DispatcherTimer filterSearchDebounce = new() { Interval = TimeSpan.FromMilliseconds(250) };
 
     private DayEntryViewModel currentlyRunningTimerEntry;
+
+    private DateTime? sessionLockTime;
 
     private const int MinFilterSearchLength = 2;
 
@@ -67,6 +71,8 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         selectedDate = DateTime.Today;
 
         timer.Tick += Timer_Tick;
+
+        SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
 
         autoSaveTimer.Tick += async (_, _) => await ExecuteSave();
         autoSaveTimer.Start();
@@ -634,6 +640,55 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         }
     }
 
+    private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+    {
+        if (e.Reason == SessionSwitchReason.SessionLock)
+        {
+            OnSessionLocked();
+        }
+        else if (e.Reason == SessionSwitchReason.SessionUnlock)
+        {
+            OnSessionUnlocked();
+        }
+    }
+
+    private void OnSessionLocked()
+    {
+        if (currentlyRunningTimerEntry == null || !timer.IsEnabled) return;
+
+        sessionLockTime = DateTime.Now;
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            currentlyRunningTimerEntry.IsTimerRunning = false;
+            timer.Stop();
+            OnPropertyChanged(nameof(IsTimerRunning));
+        });
+    }
+
+    private void OnSessionUnlocked()
+    {
+        if (sessionLockTime == null || currentlyRunningTimerEntry == null) return;
+
+        var awayDuration = TimeSpan.FromSeconds(Math.Floor((DateTime.Now - sessionLockTime.Value).TotalSeconds));
+        var entryName = currentlyRunningTimerEntry.Name;
+        sessionLockTime = null;
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            var formatted = awayDuration.ToString(@"hh\:mm\:ss");
+
+            var dialog = new MyKhronus.WPF.Windows.ConfirmWindow(
+                $"You were away for {formatted}.\n\nWould you like to add this time to \"{entryName}\"?",
+                "Welcome back");
+
+            if (dialog.ShowDialog() == true)
+            {
+                currentlyRunningTimerEntry.AddDuration(awayDuration);
+            }
+        });
+    }
+
     private async void AsyncWrapper(Func<Task> action)
     {
         try
@@ -654,5 +709,7 @@ public class DayUserControlViewModel : MainViewModelControls, IDisposable
         autoSaveTimer.Stop();
 
         filterSearchDebounce.Stop();
+
+        SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
     }
 }
