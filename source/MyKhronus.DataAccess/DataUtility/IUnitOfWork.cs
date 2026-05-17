@@ -2,6 +2,7 @@
 
 using MyKhronus.DataAccess.DayEntries.Repositories;
 using MyKhronus.DataAccess.Projects.Repositories;
+using MyKhronus.DataAccess.ScheduledWorkItems.Repositories;
 using MyKhronus.DataAccess.WorkItems.Repositories;
 
 internal interface IUnitOfWork : IDisposable
@@ -11,6 +12,8 @@ internal interface IUnitOfWork : IDisposable
     IProjectRepository GetProjectRepository();
 
     IDailyEntryRepository GetDailyEntryRepository();
+
+    IScheduledWorkItemRepository GetScheduledWorkItemRepository();
 
     Task Commit();
 }

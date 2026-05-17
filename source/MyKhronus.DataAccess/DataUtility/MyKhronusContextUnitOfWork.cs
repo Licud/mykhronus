@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MyKhronus.DataAccess.Context;
 using MyKhronus.DataAccess.DayEntries.Repositories;
 using MyKhronus.DataAccess.Projects.Repositories;
+using MyKhronus.DataAccess.ScheduledWorkItems.Repositories;
 using MyKhronus.DataAccess.WorkItems.Repositories;
 
 internal class MyKhronusContextUnitOfWork(
@@ -17,6 +18,7 @@ internal class MyKhronusContextUnitOfWork(
     private WorkItemRepository workItemRepository;
     private ProjectRepository projectRepository;
     private DailyEntryRepository dailyEntryRepository;
+    private ScheduledWorkItemRepository scheduledWorkItemRepository;
 
     private bool isDisposed = false;
 
@@ -39,6 +41,13 @@ internal class MyKhronusContextUnitOfWork(
         var logger = loggerFactory.CreateLogger<DailyEntryRepository>();
 
         return dailyEntryRepository ??= new DailyEntryRepository(logger, context);
+    }
+
+    public IScheduledWorkItemRepository GetScheduledWorkItemRepository()
+    {
+        var logger = loggerFactory.CreateLogger<ScheduledWorkItemRepository>();
+
+        return scheduledWorkItemRepository ??= new ScheduledWorkItemRepository(logger, context);
     }
 
     public async Task Commit()

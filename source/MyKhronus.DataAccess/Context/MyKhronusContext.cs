@@ -13,12 +13,23 @@ internal class MyKhronusContext(DbContextOptions<MyKhronusContext> options) : Db
 
     public DbSet<DayEntry> DayEntries { get; set; }
 
+    public DbSet<ScheduledWorkItem> ScheduledWorkItems { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.RemovePluralizingNameConventions();
 
         modelBuilder.Entity<DayEntry>()
             .HasKey(de => new { de.EntryDate, de.WorkItemId });
+
+        modelBuilder.Entity<ScheduledWorkItem>(builder =>
+        {
+            builder.HasKey(s => s.WorkItemId);
+
+            builder.HasOne(s => s.WorkItem)
+                .WithMany()
+                .HasForeignKey(s => s.WorkItemId);
+        });
 
         base.OnModelCreating(modelBuilder);
     }

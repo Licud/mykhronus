@@ -7,6 +7,7 @@ using MyKhronus.DataAccess.Context;
 using MyKhronus.DataAccess.DataUtility;
 using MyKhronus.DataAccess.DayEntries.Services;
 using MyKhronus.DataAccess.Projects.Services;
+using MyKhronus.DataAccess.ScheduledWorkItems.Services;
 using MyKhronus.DataAccess.WorkItems.Services;
 
 public static class Registrations
@@ -23,6 +24,7 @@ public static class Registrations
         serviceCollection.AddTransient<IWorkItemService, WorkItemService>();
         serviceCollection.AddTransient<IProjectService, ProjectService>();
         serviceCollection.AddTransient<IDailyEntryService, DailyEntryService>();
+        serviceCollection.AddTransient<IScheduledWorkItemService, ScheduledWorkItemService>();
 
         serviceCollection.AddTransient<IUnitOfWork, MyKhronusContextUnitOfWork>();
 

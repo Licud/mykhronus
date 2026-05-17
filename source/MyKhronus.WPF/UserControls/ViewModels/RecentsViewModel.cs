@@ -1,6 +1,7 @@
 namespace MyKhronus.WPF.UserControls.ViewModels;
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
@@ -39,9 +40,9 @@ public class RecentsViewModel : NotifyPropertyChanged, IDisposable
         Items.Filter = obj => (obj as RecentWorkItemViewModel)
             ?.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase) == true;
 
-        items.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasItems));
+        items.CollectionChanged += Collection_ChangedEventHandler;
 
-        searchDebounce.Tick += async (_, _) => await ExecuteSearch();
+        searchDebounce.Tick += SearchDebounce_Tick;
     }
 
     public ICollectionView Items { get; }
@@ -173,9 +174,21 @@ public class RecentsViewModel : NotifyPropertyChanged, IDisposable
         }
     }
 
+    private void Collection_ChangedEventHandler(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasItems));
+    }
+
+    private async void SearchDebounce_Tick(object? sender, EventArgs e)
+    {
+        await ExecuteSearch();
+    }
+
     public void Dispose()
     {
+        items.CollectionChanged -= Collection_ChangedEventHandler;
         searchDebounce.Stop();
+        searchDebounce.Tick -= SearchDebounce_Tick;
         Clear();
     }
 }
