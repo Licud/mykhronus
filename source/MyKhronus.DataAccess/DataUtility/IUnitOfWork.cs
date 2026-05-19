@@ -7,11 +7,12 @@ using MyKhronus.DataAccess.WorkItems.Repositories;
 
 internal interface IUnitOfWork : IDisposable
 {
-    IWorkItemRepository GetWorkItemRepository();
 
-    IProjectRepository GetProjectRepository();
+    IWorkItemRepository WorkItems { get; }
 
-    IDailyEntryRepository GetDailyEntryRepository();
+    IProjectRepository Projects { get; }
+
+    IDailyEntryRepository DailyEntries { get; }
 
     IScheduledWorkItemRepository GetScheduledWorkItemRepository();
 

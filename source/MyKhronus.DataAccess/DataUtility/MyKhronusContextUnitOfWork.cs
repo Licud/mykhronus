@@ -22,21 +22,27 @@ internal class MyKhronusContextUnitOfWork(
 
     private bool isDisposed = false;
 
-    public IWorkItemRepository GetWorkItemRepository()
+    public IWorkItemRepository WorkItems => GetWorkItemRepository();
+
+    public IProjectRepository Projects => GetProjectRepository();
+
+    public IDailyEntryRepository DailyEntries => GetDailyEntryRepository();
+
+    private IWorkItemRepository GetWorkItemRepository()
     {
         var logger = loggerFactory.CreateLogger<WorkItemRepository>();
 
         return workItemRepository ??= new WorkItemRepository(logger, context);
     }
 
-    public IProjectRepository GetProjectRepository()
+    private IProjectRepository GetProjectRepository()
     {
         var logger = loggerFactory.CreateLogger<ProjectRepository>();
 
         return projectRepository ??= new ProjectRepository(logger, context);
     }
 
-    public IDailyEntryRepository GetDailyEntryRepository()
+    private IDailyEntryRepository GetDailyEntryRepository()
     {
         var logger = loggerFactory.CreateLogger<DailyEntryRepository>();
 
@@ -52,12 +58,9 @@ internal class MyKhronusContextUnitOfWork(
 
     public async Task Commit()
     {
-        if (isDisposed)
-        {
-            return;
-        }
+        ObjectDisposedException.ThrowIf(isDisposed, this);
 
-        await context?.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 
     public void Dispose()

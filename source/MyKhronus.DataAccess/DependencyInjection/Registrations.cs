@@ -26,7 +26,7 @@ public static class Registrations
         serviceCollection.AddTransient<IDailyEntryService, DailyEntryService>();
         serviceCollection.AddTransient<IScheduledWorkItemService, ScheduledWorkItemService>();
 
-        serviceCollection.AddTransient<IUnitOfWork, MyKhronusContextUnitOfWork>();
+        serviceCollection.AddTransient<IUnitOfWorkFactory, UnitOfWorkFactory>();
 
         return serviceCollection;
     }
