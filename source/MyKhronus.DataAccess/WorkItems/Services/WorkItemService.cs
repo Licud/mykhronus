@@ -7,25 +7,25 @@ using System.Threading.Tasks;
 using MyKhronus.DataAccess.DataUtility;
 using MyKhronus.DataAccess.WorkItems.Models;
 
-internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
+internal class WorkItemService(IUnitOfWorkFactory unitOfWorkFactory) : IWorkItemService
 {
     public async Task<WorkItem> Add(NewWorkItem workItem)
     {
-        var repository = unitOfWork.GetWorkItemRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
         var filter = new WorkItemGetFilter
         {
             Description = workItem.Description,
         };
 
-        var existing = await repository.Get(filter);
+        var existing = await unitOfWork.WorkItems.Get(filter);
 
         if (existing.Any())
         {
             return existing.FirstOrDefault();
         }
 
-        var added = await repository.Add(workItem);
+        var added = await unitOfWork.WorkItems.Add(workItem);
 
         await unitOfWork.Commit();
 
@@ -34,45 +34,43 @@ internal class WorkItemService(IUnitOfWork unitOfWork) : IWorkItemService
 
     public async Task Delete(Guid workItemId)
     {
-        var dailyEntryRepository = unitOfWork.GetDailyEntryRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        await dailyEntryRepository.Delete(workItemId);
+        await unitOfWork.DailyEntries.Delete(workItemId);
 
-        var workItemRepository = unitOfWork.GetWorkItemRepository();
-
-        await workItemRepository.Delete(workItemId);
+        await unitOfWork.WorkItems.Delete(workItemId);
 
         await unitOfWork.Commit();
     }
 
     public async Task<IEnumerable<WorkItem>> Get(WorkItemGetFilter filter)
     {
-        var repository = unitOfWork.GetWorkItemRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        return await repository.Get(filter);
+        return await unitOfWork.WorkItems.Get(filter);
     }
 
     public async Task<IEnumerable<WorkItem>> Search(string description)
     {
-        var repository = unitOfWork.GetWorkItemRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        return await repository.Search(description);
+        return await unitOfWork.WorkItems.Search(description);
     }
 
     public async Task LinkWorkItemToProject(Guid workItemId, int projectId)
     {
-        var repository = unitOfWork.GetWorkItemRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        await repository.LinkWorkItemToProject(workItemId, projectId);
+        await unitOfWork.WorkItems.LinkWorkItemToProject(workItemId, projectId);
 
         await unitOfWork.Commit();
     }
 
     public async Task UnlinkWorkItemToProject(Guid workItemId)
     {
-        var repository = unitOfWork.GetWorkItemRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        await repository.UnlinkWorkItemToProject(workItemId);
+        await unitOfWork.WorkItems.UnlinkWorkItemToProject(workItemId);
 
         await unitOfWork.Commit();
     }
