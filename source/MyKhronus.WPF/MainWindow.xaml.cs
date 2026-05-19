@@ -1,8 +1,11 @@
-﻿namespace MyKhronus.WPF;
+namespace MyKhronus.WPF;
 
+using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 
 public partial class MainWindow : Window
@@ -10,6 +13,39 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        ((HwndSource)PresentationSource.FromVisual(this)).AddHook(WndProc);
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == 0x0083 && wParam.ToInt32() == 1) // WM_NCCALCSIZE when maximizing
+        {
+            handled = true;
+            return IntPtr.Zero;
+        }
+
+        if (msg == 0x0024) // WM_GETMINMAXINFO
+        {
+            var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+
+            var monitor = NativeMethods.MonitorFromWindow(hwnd, 0x0002); // MONITOR_DEFAULTTONEAREST
+            var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+            NativeMethods.GetMonitorInfo(monitor, ref info);
+
+            var workArea = info.rcWork;
+            mmi.ptMaxPosition = new POINT { x = workArea.left, y = workArea.top };
+            mmi.ptMaxSize = new POINT { x = workArea.right - workArea.left, y = workArea.bottom - workArea.top };
+
+            Marshal.StructureToPtr(mmi, lParam, true);
+            handled = true;
+        }
+
+        return IntPtr.Zero;
     }
 
     private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
@@ -29,6 +65,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (WindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Normal;
+            Left = e.GetPosition(this).X - (RestoreBounds.Width / 2);
+            Top = 0;
+        }
+
         DragMove();
     }
 
@@ -36,7 +79,47 @@ public partial class MainWindow : Window
 
     private void Maximize_Click(object sender, RoutedEventArgs e)
         => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-    
-    private void Close_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
 
+    private void Close_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+}
+
+file static class NativeMethods
+{
+    [DllImport("user32.dll")]
+    internal static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    internal static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+}
+
+[StructLayout(LayoutKind.Sequential)]
+file struct MINMAXINFO
+{
+    public POINT ptReserved;
+    public POINT ptMaxSize;
+    public POINT ptMaxPosition;
+    public POINT ptMinTrackSize;
+    public POINT ptMaxTrackSize;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+file struct POINT
+{
+    public int x;
+    public int y;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+file struct RECT
+{
+    public int left, top, right, bottom;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+file struct MONITORINFO
+{
+    public int cbSize;
+    public RECT rcMonitor;
+    public RECT rcWork;
+    public uint dwFlags;
 }
