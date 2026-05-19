@@ -1,0 +1,52 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Get version from csproj
+        id: version
+        run: |
+          $version = ([xml](Get-Content source/MyKhronus.WPF/MyKhronus.WPF.csproj)).Project.PropertyGroup.Version
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish WPF App
+        run: |
+          dotnet publish source/MyKhronus.WPF/MyKhronus.WPF.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:EnableReadyToRun=false `
+            -o ./publish
+
+      - name: Clean publish folder
+        run: |
+          Get-ChildItem ./publish | Where-Object { 
+            $_.Name -ne "MyKhronus.exe" -and $_.Name -ne "images" 
+          } | Remove-Item -Recurse -Force
+
+      - name: Zip release contents
+        run: |
+          Compress-Archive -Path ./publish/MyKhronus.exe, ./publish/images -DestinationPath ./MyKhronus-v${{ steps.version.outputs.VERSION }}.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: Release v${{ steps.version.outputs.VERSION }}
+          files: ./MyKhronus-v${{ steps.version.outputs.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
