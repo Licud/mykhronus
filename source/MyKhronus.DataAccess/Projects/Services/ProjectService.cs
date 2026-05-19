@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using MyKhronus.DataAccess.DataUtility;
 using MyKhronus.DataAccess.Projects.Models;
 
-internal class ProjectService(IUnitOfWork unitOfWork) : IProjectService
+internal class ProjectService(IUnitOfWorkFactory unitOfWorkFactory) : IProjectService
 {
     public async Task<Project> Add(NewProject project)
     {
-        var repository = unitOfWork.GetProjectRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        var added = await repository.Add(project);
+        var added = await unitOfWork.Projects.Add(project);
 
         await unitOfWork.Commit();
 
@@ -21,18 +21,18 @@ internal class ProjectService(IUnitOfWork unitOfWork) : IProjectService
 
     public async Task Delete(int projectId)
     {
-        var repository = unitOfWork.GetProjectRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        await repository.Delete(projectId);
+        await unitOfWork.Projects.Delete(projectId);
 
         await unitOfWork.Commit();
     }
 
     public async Task<IEnumerable<Project>> Get(ProjectGetFilter filter)
     {
-        var repository = unitOfWork.GetProjectRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        return await repository.Get(filter);
+        return await unitOfWork.Projects.Get(filter);
     }
 
     public Task<IEnumerable<Project>> Get()
