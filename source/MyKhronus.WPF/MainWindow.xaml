@@ -10,7 +10,6 @@
         Title="MyKhronus"
         MinWidth="1200" MinHeight="750"
         WindowState="Maximized"
-        MaxHeight="{Binding Source={x:Static SystemParameters.MaximizedPrimaryScreenHeight}}"
         DataContext="{Binding Source={StaticResource locator}, Path=MainViewModel}"
         WindowStyle="None" ResizeMode="CanResize">
 
