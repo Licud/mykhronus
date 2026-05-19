@@ -34,15 +34,9 @@ jobs:
             -p:EnableReadyToRun=false `
             -o ./publish
 
-      - name: Clean publish folder
-        run: |
-          Get-ChildItem ./publish | Where-Object { 
-            $_.Name -ne "MyKhronus.exe" -and $_.Name -ne "images" 
-          } | Remove-Item -Recurse -Force
-
       - name: Zip release contents
         run: |
-          Compress-Archive -Path ./publish/MyKhronus.exe, ./publish/images -DestinationPath ./MyKhronus-v${{ steps.version.outputs.VERSION }}.zip
+          Compress-Archive -Path ./publish/MyKhronus.exe -DestinationPath ./MyKhronus-v${{ steps.version.outputs.VERSION }}.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
