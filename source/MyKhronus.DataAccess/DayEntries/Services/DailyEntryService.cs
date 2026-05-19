@@ -1,4 +1,4 @@
-﻿namespace MyKhronus.DataAccess.DayEntries.Services;
+namespace MyKhronus.DataAccess.DayEntries.Services;
 
 using System;
 using System.Collections.Generic;
@@ -7,17 +7,16 @@ using System.Threading.Tasks;
 using MyKhronus.DataAccess.DataUtility;
 using MyKhronus.DataAccess.DayEntries.Models;
 
-internal class DailyEntryService(IUnitOfWork unitOfWork) : IDailyEntryService
+internal class DailyEntryService(IUnitOfWorkFactory unitOfWorkFactory) : IDailyEntryService
 {
+
     public async Task<DayEntry> Add(DateTime entryDate, Guid workItemId)
     {
-        var dailyEntryRepository = unitOfWork.GetDailyEntryRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        var added = await dailyEntryRepository.Add(entryDate, workItemId);
+        var added = await unitOfWork.DailyEntries.Add(entryDate, workItemId);
 
-        var workItemRepository = unitOfWork.GetWorkItemRepository();
-
-        var workItems = await workItemRepository.Get(new()
+        var workItems = await unitOfWork.WorkItems.Get(new()
         {
             WorkItemId = workItemId,
         });
@@ -27,41 +26,41 @@ internal class DailyEntryService(IUnitOfWork unitOfWork) : IDailyEntryService
             LastUsed = DateTime.UtcNow,
         };
 
-        await workItemRepository.Update(updatedWorkItem);
+        await unitOfWork.WorkItems.Update(updatedWorkItem);
 
         await unitOfWork.Commit();
 
-        return  new DayEntry(entryDate, workItemId, added.Duration); ;
+        return new DayEntry(entryDate, workItemId, added.Duration);
     }
 
     public async Task Delete(DateTime entryDate, Guid workItemId)
     {
-        var repository = unitOfWork.GetDailyEntryRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        await repository.Delete(entryDate, workItemId);
+        await unitOfWork.DailyEntries.Delete(entryDate, workItemId);
 
         await unitOfWork.Commit();
     }
 
     public async Task<IReadOnlyList<DayEntry>> GetEntries(DateTime entryDate)
     {
-        var repository = unitOfWork.GetDailyEntryRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        return await repository.GetEntries(entryDate);
+        return await unitOfWork.DailyEntries.GetEntries(entryDate);
     }
 
     public async Task<IReadOnlyList<DayEntry>> GetEntriesBetween(DateTime from, DateTime to)
     {
-        var repository = unitOfWork.GetDailyEntryRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        return await repository.GetEntriesBetween(from, to);
+        return await unitOfWork.DailyEntries.GetEntriesBetween(from, to);
     }
 
     public async Task Update(DayEntry dayEntry)
     {
-        var repository = unitOfWork.GetDailyEntryRepository();
+        using var unitOfWork = unitOfWorkFactory.Create();
 
-        await repository.Update(dayEntry);
+        await unitOfWork.DailyEntries.Update(dayEntry);
 
         await unitOfWork.Commit();
     }
