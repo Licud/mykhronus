@@ -36,12 +36,6 @@
     <None Remove="images\Subtract.png" />
   </ItemGroup>
 
-    <ItemGroup>
-	    <Content Include="images\**">
-		    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    </Content>
-    </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
