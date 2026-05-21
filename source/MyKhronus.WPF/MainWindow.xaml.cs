@@ -29,6 +29,12 @@ public partial class MainWindow : Window
             return IntPtr.Zero;
         }
 
+        if (msg == 0x0086) // WM_NCACTIVATE — stop Windows drawing the inactive frame edge
+        {
+            handled = true;
+            return new IntPtr(1);
+        }
+
         if (msg == 0x0024) // WM_GETMINMAXINFO
         {
             var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
