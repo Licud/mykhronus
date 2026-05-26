@@ -2,11 +2,13 @@
 
 using System;
 
+using MyKhronus.DataAccess.Shared;
+
 public record WorkItemGetFilter
 {
-    public Guid? WorkItemId { get; set; }
+    public Option<Guid> WorkItemId { get; init; }
 
-    public string Description { get; set; } = string.Empty;
+    public Option<string> Description { get; init; }
 
-    public IEnumerable<Guid> WorkItemIds { get; set; } = Enumerable.Empty<Guid>();
+    public Option<IEnumerable<Guid>> WorkItemIds { get; init; }
 }
