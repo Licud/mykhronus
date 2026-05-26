@@ -29,6 +29,12 @@ public partial class MainWindow : Window
             return IntPtr.Zero;
         }
 
+        if (msg == 0x0086) // WM_NCACTIVATE — stop Windows drawing the inactive frame edge
+        {
+            handled = true;
+            return new IntPtr(1);
+        }
+
         if (msg == 0x0024) // WM_GETMINMAXINFO
         {
             var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
@@ -37,9 +43,20 @@ public partial class MainWindow : Window
             var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
             NativeMethods.GetMonitorInfo(monitor, ref info);
 
+            var monitorRect = info.rcMonitor;
             var workArea = info.rcWork;
-            mmi.ptMaxPosition = new POINT { x = workArea.left, y = workArea.top };
-            mmi.ptMaxSize = new POINT { x = workArea.right - workArea.left, y = workArea.bottom - workArea.top };
+
+            mmi.ptMaxPosition = new POINT
+            {
+                x = Math.Abs(workArea.left - monitorRect.left),
+                y = Math.Abs(workArea.top - monitorRect.top)
+            };
+
+            mmi.ptMaxSize = new POINT
+            {
+                x = Math.Abs(workArea.right - workArea.left),
+                y = Math.Abs(workArea.bottom - workArea.top)
+            };
 
             Marshal.StructureToPtr(mmi, lParam, true);
             handled = true;
@@ -67,9 +84,14 @@ public partial class MainWindow : Window
 
         if (WindowState == WindowState.Maximized)
         {
+            var cursorPos = e.GetPosition(this);
+            var cursorScreenPos = PointToScreen(cursorPos);
+            var ratio = cursorPos.X / ActualWidth;
+            var restoreWidth = RestoreBounds.Width;
+
             WindowState = WindowState.Normal;
-            Left = e.GetPosition(this).X - (RestoreBounds.Width / 2);
-            Top = 0;
+            Left = cursorScreenPos.X - (restoreWidth * ratio);
+            Top = cursorScreenPos.Y - 10;
         }
 
         DragMove();
