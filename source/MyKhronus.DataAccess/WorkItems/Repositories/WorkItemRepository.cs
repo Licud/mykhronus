@@ -52,19 +52,19 @@ internal class WorkItemRepository(ILogger<WorkItemRepository> logger, MyKhronusC
             .Include(w => w.Project)
             .AsQueryable();
 
-        if (filter.WorkItemId.HasValue)
+        if (filter.WorkItemId.IsSet)
         {
             query = query.Where(w => w.Id == filter.WorkItemId.Value);
         }
 
-        if (!string.IsNullOrEmpty(filter.Description))
+        if (filter.Description.IsSet && !string.IsNullOrEmpty(filter.Description.Value))
         {
-            query = query.Where(w => w.Description == filter.Description);
+            query = query.Where(w => w.Description == filter.Description.Value);
         }
 
-        if (filter.WorkItemIds.Any())
+        if (filter.WorkItemIds.IsSet)
         {
-            query = query.Where(w => filter.WorkItemIds.Contains(w.Id));
+            query = query.Where(w => filter.WorkItemIds.Value.Contains(w.Id));
         }
 
         query = query
